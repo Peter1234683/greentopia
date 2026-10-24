@@ -162,6 +162,10 @@ export default async function DiagnosisResultPage(props: PageProps<"/customer/bu
       <ButtonLink href={`/customer/subsidy?b=${b.id}`} variant="mint" className="w-full">
         💰 이 진단으로 숨은 지원금 확인하기
       </ButtonLink>
+      <div className="grid grid-cols-2 gap-2">
+        <ButtonLink href={`/customer/buildings/${b.id}/guide`} variant="outline" className="px-3 text-sm">📘 전문가 가이드 보기</ButtonLink>
+        <ButtonLink href={`/customer/buildings/${b.id}/photo`} variant="outline" className="px-3 text-sm">📷 사진으로 진단</ButtonLink>
+      </div>
 
       <Card>
         <p className="font-bold">더 정확하게 알고 싶다면</p>

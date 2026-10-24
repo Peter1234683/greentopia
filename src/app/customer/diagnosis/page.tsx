@@ -160,6 +160,23 @@ export default async function DiagnosisHub(props: PageProps<"/customer/diagnosis
                 </Link>
               </Card>
             )}
+
+            <div className="grid grid-cols-2 gap-2">
+              <Link href={`/customer/buildings/${b.id}/photo`} className="block">
+                <Card className="h-full p-4 hover:ring-mint-300">
+                  <p className="text-2xl" aria-hidden="true">📷</p>
+                  <p className="mt-1 font-bold">사진으로 진단</p>
+                  <p className="text-xs text-muted">결로·곰팡이·창틀 사진으로 부위별 상태 확인</p>
+                </Card>
+              </Link>
+              <Link href={`/customer/buildings/${b.id}/guide`} className="block">
+                <Card className="h-full p-4 hover:ring-mint-300">
+                  <p className="text-2xl" aria-hidden="true">📘</p>
+                  <p className="mt-1 font-bold">성공 가이드</p>
+                  <p className="text-xs text-muted">숨은 리스크와 단계별 체크리스트</p>
+                </Card>
+              </Link>
+            </div>
           </div>
         );
       })}

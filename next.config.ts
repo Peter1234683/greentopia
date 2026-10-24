@@ -30,8 +30,8 @@ const nextConfig: NextConfig = {
     ];
   },
   experimental: {
-    // 사업자 가입 시 증빙 파일(최대 5MB × 2) 업로드
-    serverActions: { bodySizeLimit: "12mb" },
+    // 사업자 증빙(5MB × 2) · 진단 사진(5MB × 4) 업로드
+    serverActions: { bodySizeLimit: "24mb" },
   },
 };
 

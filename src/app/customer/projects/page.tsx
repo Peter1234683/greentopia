@@ -8,11 +8,19 @@ import { Timeline } from "@/components/Timeline";
 import { Badge, ButtonLink, Card } from "@/components/ui";
 import { CONTRACT_STATUS_LABEL, PROJECT_STAGES, TRADE_LABEL, type Trade } from "@/lib/constants";
 import { won } from "@/lib/format";
+import { toggleChecklist } from "@/app/actions/photo";
+import { PHASE_LABEL } from "@/lib/photo/guide";
 
 export const metadata: Metadata = { title: "내 공사" };
 
-export default async function MyProjects() {
+export default async function MyProjects(props: PageProps<"/customer/projects">) {
   const user = await requireRole("CUSTOMER");
+  const { checklist: imported } = await props.searchParams;
+  const todos = await db.checklistItem.findMany({
+    where: { building: { ownerId: user.id } },
+    include: { building: { select: { nickname: true, dong: true } } },
+    orderBy: [{ done: "asc" }, { createdAt: "asc" }],
+  });
   const [buildings] = await Promise.all([
     db.building.findMany({
       where: { ownerId: user.id },
@@ -38,6 +46,7 @@ export default async function MyProjects() {
   return (
     <div className="space-y-5 pt-2">
       <h1 className="text-2xl font-extrabold">내 공사</h1>
+      {imported && <p role="status" className="rounded-2xl bg-forest-800 px-4 py-3 text-sm text-white">✅ 성공 가이드 체크리스트를 할 일로 가져왔어요.</p>}
       {items.length === 0 && (
         <Card className="text-center">
           <div className="text-5xl" aria-hidden="true">📋</div>
@@ -68,6 +77,39 @@ export default async function MyProjects() {
           </Link>
         );
       })}
+
+      {todos.length > 0 && (
+        <section className="space-y-3">
+          <div className="flex items-end justify-between">
+            <h2 className="text-lg font-bold">✅ 공사 할 일</h2>
+            <span className="text-sm text-muted">{todos.filter((t) => t.done).length}/{todos.length} 완료</span>
+          </div>
+          {(["BEFORE", "DURING", "AFTER"] as const).map((ph) => {
+            const list = todos.filter((t) => t.phase === ph);
+            if (!list.length) return null;
+            return (
+              <Card key={ph} className="p-4">
+                <p className="font-bold">{PHASE_LABEL[ph]}</p>
+                <ul className="mt-2 space-y-1">
+                  {list.map((t) => (
+                    <li key={t.id}>
+                      <form action={toggleChecklist}>
+                        <input type="hidden" name="itemId" value={t.id} />
+                        <button aria-pressed={t.done} className="flex w-full items-start gap-2 rounded-xl px-1 py-1.5 text-left text-sm hover:bg-mint-50">
+                          <span aria-hidden="true" className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md ring-1 ${t.done ? "bg-forest-700 text-white ring-forest-700" : "ring-line"}`}>{t.done ? "✓" : ""}</span>
+                          <span className={`flex-1 ${t.done ? "text-muted line-through" : ""}`}>{t.title}</span>
+                          {t.importance === "HIGH" && !t.done && <Badge tone="danger">중요</Badge>}
+                          {t.expertCheck && <Badge tone="forest">전문가 확인</Badge>}
+                        </button>
+                      </form>
+                    </li>
+                  ))}
+                </ul>
+              </Card>
+            );
+          })}
+        </section>
+      )}
 
       <section className="space-y-3">
         <h2 className="text-lg font-bold">🎁 지원사업 안내</h2>
