@@ -9,6 +9,7 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { DAEGU_DISTRICTS, SIDO, type District } from "../src/config/regions";
+import { runMatching } from "../src/lib/matching/run";
 
 const db = new PrismaClient();
 
@@ -439,12 +440,26 @@ async function main() {
     ],
   });
 
+  // ── AI 매칭 실행 + 데모 상태 ──
+  await runMatching();
+  // 데모 고객이 속한 Cluster: 이웃 3동이 먼저 참여 → 데모 고객이 참여하면 입찰 공고 초안이 생긴다
+  const demoMember = await db.clusterMember.findFirst({ where: { buildingId: demo.building.id }, include: { cluster: { include: { members: true } } } });
+  if (demoMember) {
+    const others = demoMember.cluster.members.filter((m) => m.buildingId !== demo.building.id).slice(0, 3);
+    for (const m of others) {
+      await db.clusterMember.update({ where: { id: m.id }, data: { status: "JOINED", joinedAt: new Date(Date.now() - int(1, 5) * 864e5) } });
+      if (m.demandId) await db.retrofitDemand.update({ where: { id: m.demandId }, data: { status: "MATCHED" } });
+    }
+    await db.cluster.update({ where: { id: demoMember.clusterId }, data: { status: "RECRUITING" } });
+  }
+
   const counts = {
     users: await db.user.count(),
     buildings: await db.building.count(),
     activeDemands: await db.retrofitDemand.count({ where: { status: "ACTIVE" } }),
     contractors: await db.contractorProfile.count(),
     clusters: await db.cluster.count(),
+    proposedClusters: await db.cluster.count({ where: { status: { in: ["PROPOSED", "RECRUITING"] } } }),
     contracts: await db.contract.count(),
     reviews: await db.review.count(),
   };

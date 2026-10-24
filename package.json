@@ -18,11 +18,13 @@
     "@prisma/client": "^6.19.3",
     "bcryptjs": "^3.0.3",
     "jose": "^6.2.13",
+    "leaflet": "^1.9.4",
     "marked": "^16.4.2",
     "next": "16.4.3",
     "prisma": "^6.19.3",
     "react": "19.3.0",
     "react-dom": "19.3.0",
+    "react-leaflet": "^5.0.0",
     "recharts": "^3.10.1",
     "server-only": "^0.0.1",
     "tailwind-merge": "^3.7.0",
@@ -30,6 +32,7 @@
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",
+    "@types/leaflet": "^1.9.22",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
@@ -40,6 +43,6 @@
     "typescript": "^5"
   },
   "prisma": {
-    "seed": "tsx prisma/seed.ts"
+    "seed": "node --conditions=react-server --import tsx prisma/seed.ts"
   }
 }

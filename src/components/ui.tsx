@@ -49,7 +49,7 @@ export function Badge({
     forest: "bg-forest-800 text-mint-300",
     danger: "bg-red-50 text-danger",
   };
-  return <span className={cx("inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold", tones[tone])}>{children}</span>;
+  return <span className={cx("inline-flex shrink-0 items-center whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-semibold", tones[tone])}>{children}</span>;
 }
 
 export function Field({
