@@ -2,7 +2,11 @@
 
 export function won(n: number | null | undefined) {
   if (n == null) return "-";
-  if (n >= 1e8) return `${(n / 1e8).toFixed(n % 1e8 === 0 ? 0 : 1)}억 원`;
+  if (n >= 1e8) {
+    const eok = Math.floor(n / 1e8);
+    const man = Math.round((n % 1e8) / 1e4);
+    return man ? `${eok}억 ${man.toLocaleString("ko-KR")}만 원` : `${eok}억 원`;
+  }
   if (n >= 1e4) return `${Math.round(n / 1e4).toLocaleString("ko-KR")}만 원`;
   return `${n.toLocaleString("ko-KR")}원`;
 }

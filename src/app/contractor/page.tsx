@@ -1,4 +1,9 @@
+import Link from "next/link";
 import { requireRole } from "@/lib/dal";
+import { myContractor } from "@/lib/bidding/view";
+import { loadPQRules } from "@/lib/bidding/contractors";
+import { checkEligibility } from "@/lib/bidding/eligibility";
+import { tenderEligInput } from "@/lib/bidding/tenders";
 import { db } from "@/lib/db";
 import { Badge, Card } from "@/components/ui";
 import { GRADE_LABEL, TRADE_LABEL, type Grade, type Trade } from "@/lib/constants";
@@ -58,12 +63,14 @@ export default async function ContractorHome() {
   ]);
   const trades = p.trades.map((t) => t.trade);
   const sigungu = p.regions.map((r) => r.sigungu);
-  const newTenders = await db.tender.count({
-    where: {
-      status: "OPEN",
-      cluster: { trade: { in: trades }, ...(sigungu.includes("전체") ? {} : { sigungu: { in: sigungu } }) },
-    },
-  });
+  const [me, rules, openTenders] = await Promise.all([
+    myContractor(p.id),
+    loadPQRules(),
+    db.tender.findMany({ where: { status: "OPEN", deadline: { gt: new Date() } }, include: { cluster: true, nominations: true, bids: { where: { contractorId: p.id } } } }),
+  ]);
+  const eligibleOpen = openTenders.filter((t) => checkEligibility(me, tenderEligInput(t), rules).eligible);
+  const newTenders = eligibleOpen.filter((t) => t.bids.length === 0).length;
+  const priority = ["GREEN_PARTNER", "EXCELLENT"].includes(p.grade);
 
   const kpis: [string, string][] = [
     ["이번 달 수주", won(monthly._sum.amount ?? 0)],
@@ -74,10 +81,13 @@ export default async function ContractorHome() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between rounded-2xl bg-forest-800 px-4 py-3 text-white">
-        <span className="text-sm">📢 내 권역 신규 공고</span>
-        <span className="text-lg font-extrabold text-mint-300">{newTenders}건</span>
-      </div>
+      <Link href="/contractor/tenders" className="flex items-center justify-between rounded-2xl bg-forest-800 px-4 py-3 text-white">
+        <span className="text-sm">
+          📢 참가 가능한 신규 공고
+          {priority && <span className="ml-2 rounded-full bg-mint-400 px-2 py-0.5 text-[0.65rem] font-bold text-forest-950">우선 알림</span>}
+        </span>
+        <span className="text-lg font-extrabold text-mint-300">{newTenders}건 ›</span>
+      </Link>
 
       <div className="grid grid-cols-2 gap-3">
         {kpis.map(([label, value]) => (

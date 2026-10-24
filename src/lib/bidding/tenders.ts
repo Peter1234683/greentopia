@@ -77,7 +77,7 @@ export async function createTenderDraft(clusterId: string, opts: { round?: numbe
       recommendedMethod: rec.method,
       recommendationReason: rec.reasons.join("\n"),
       qualificationJson: JSON.stringify({ ...(rec.qualification ?? {}), ...(opts.expandedRegion ? { expandedRegion: true } : {}) }),
-      priceCap: opts.priceCap ?? high,
+      priceCap: opts.priceCap ?? Math.round((high * (1 + s.priceCapMargin)) / 10_000) * 10_000,
       performanceSpec: s.performanceSpecs[cluster.trade] ?? null,
       workStart,
       workEnd: new Date(workStart.getTime() + 60 * 864e5),

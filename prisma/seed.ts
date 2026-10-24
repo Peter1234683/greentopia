@@ -10,6 +10,12 @@ import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { DAEGU_DISTRICTS, SIDO, type District } from "../src/config/regions";
 import { runMatching } from "../src/lib/matching/run";
+import { createTenderDraft } from "../src/lib/bidding/tenders";
+import { confirmTender } from "../src/lib/bidding/lifecycle";
+import { bidTotal, tierRanges } from "../src/lib/bidding/bidMath";
+import { PRICING_DEFAULTS } from "../src/config/pricing";
+import { BIDDING_DEFAULTS } from "../src/config/bidding";
+import { MATCHING_DEFAULTS } from "../src/config/matching";
 
 const db = new PrismaClient();
 
@@ -453,6 +459,58 @@ async function main() {
     await db.cluster.update({ where: { id: demoMember.clusterId }, data: { status: "RECRUITING" } });
   }
 
+  // 진행 중 입찰 공고: Cluster 전원 참여 → 공고 초안 → (일부) 운영자 확정
+  async function joinAll(clusterId: string) {
+    const members = await db.clusterMember.findMany({ where: { clusterId } });
+    for (const m of members) {
+      await db.clusterMember.update({ where: { id: m.id }, data: { status: "JOINED", joinedAt: new Date(Date.now() - int(3, 9) * 864e5) } });
+      if (m.demandId) await db.retrofitDemand.update({ where: { id: m.demandId }, data: { status: "MATCHED" } });
+    }
+    await db.cluster.update({ where: { id: clusterId }, data: { status: "RECRUITING" } });
+  }
+  async function seedBid(tenderId: string, email: string, factor: number, durationDays: number, warrantyMonths: number) {
+    const t = await db.tender.findUniqueOrThrow({ where: { id: tenderId }, include: { cluster: { include: { members: { where: { status: "JOINED" } } } } } });
+    const tp = PRICING_DEFAULTS.trades[t.cluster.trade];
+    const mid = (tp.unitPrice.low + tp.unitPrice.high) / 2;
+    const table = Object.fromEntries(tp.types.map((x) => [x.code, Math.round((mid * factor * x.factor) / 1000) * 1000]));
+    const ranges = tierRanges(t.cluster.members.length, MATCHING_DEFAULTS.minClusterSize, BIDDING_DEFAULTS.tierUpperShare, BIDDING_DEFAULTS.tierExtra);
+    const tiers = ranges.map((r, i) => ({ ...r, adjustPct: i === 0 ? 0 : 5 }));
+    const members = t.cluster.members.map((m, i) => {
+      const q = JSON.parse(m.quantityJson ?? "{}")[t.cluster.trade];
+      return { memberId: m.id, label: `${i + 1}번 건물`, amount: q.amount, mix: q.mix, unit: q.unit };
+    });
+    await db.bid.create({
+      data: {
+        tenderId, contractorId: contractorId[email], tierPricesJson: json(tiers), unitPriceTableJson: json(table),
+        totalPrice: bidTotal(members, table, tiers).total, durationDays, warrantyMonths, asMonths: 12,
+        staffPlan: "시공 2개 조(5명), 운반 차량 1대", planSummary: "1주차 실측 후 근거리 순서로 하루 1동씩 연속 시공, 마지막 주 일괄 점검",
+        status: "SUBMITTED", submittedAt: new Date(Date.now() - int(1, 2) * 864e5),
+      },
+    });
+  }
+  const proposed = await db.cluster.findMany({ where: { status: "PROPOSED" }, include: { members: true } });
+  const findCluster = (trade: string, sigungu: string) => proposed.find((c) => c.trade === trade && c.sigungu === sigungu);
+  const windowWest = findCluster("WINDOW", "서구");
+  if (windowWest) {
+    await joinAll(windowWest.id);
+    const t = await createTenderDraft(windowWest.id);
+    await confirmTender(t.id, t.method);
+    await seedBid(t.id, "c04@demo.kr", 0.93, 30, 24);
+    await seedBid(t.id, "c11@demo.kr", 0.88, 35, 24);
+  }
+  const boiler = proposed.filter((c) => c.trade === "BOILER").sort((a, b) => b.members.length - a.members.length)[0];
+  if (boiler) {
+    await joinAll(boiler.id);
+    const t = await createTenderDraft(boiler.id);
+    await confirmTender(t.id, t.method);
+    await seedBid(t.id, "c05@demo.kr", 0.9, 20, 24);
+  }
+  const ext = findCluster("EXT_INSULATION", "북구");
+  if (ext) {
+    await joinAll(ext.id);
+    await createTenderDraft(ext.id); // 운영자 확정 대기 (DRAFT)
+  }
+
   const counts = {
     users: await db.user.count(),
     buildings: await db.building.count(),
@@ -460,6 +518,8 @@ async function main() {
     contractors: await db.contractorProfile.count(),
     clusters: await db.cluster.count(),
     proposedClusters: await db.cluster.count({ where: { status: { in: ["PROPOSED", "RECRUITING"] } } }),
+    tenders: await db.tender.groupBy({ by: ["status"], _count: true }),
+    openBids: await db.bid.count({ where: { status: "SUBMITTED" } }),
     contracts: await db.contract.count(),
     reviews: await db.review.count(),
   };

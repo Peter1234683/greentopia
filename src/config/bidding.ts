@@ -1,6 +1,7 @@
 // 입찰 제도 설정 (민간 공사이므로 국가계약법 강제 적용 대상 아님 — 공공조달 원리를 설계에 차용)
 export const BIDDING_DEFAULTS = {
   tenderDays: 10, // 공고 기간
+  priceCapMargin: 0.1, // 공고 상한 = 공동발주 예상 범위 상단 × (1 + 이 비율)
   reannounceExtraDays: 7,
   minBidders: 2, // 이 미만이면 유찰
   maxRoundsBeforeNegotiation: 2, // 재공고까지 유찰되면 수의계약 전환 가능

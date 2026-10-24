@@ -8,7 +8,8 @@ import type { MapProps } from "./types";
 function FitBounds({ points }: { points: [number, number][] }) {
   const map = useMap();
   useEffect(() => {
-    if (points.length > 1) map.fitBounds(points, { padding: [24, 24], maxZoom: 16 });
+    // 애니메이션 중 화면을 떠나면 Leaflet 이 _leaflet_pos 오류를 내므로 애니메이션 없이 맞춘다
+    if (points.length > 1) map.fitBounds(points, { padding: [24, 24], maxZoom: 16, animate: false });
   }, [map, points]);
   return null;
 }
@@ -24,7 +25,16 @@ export default function LeafletMap({ center, zoom = 14, markers, circles = [], h
   const points = markers.map((m) => [m.lat, m.lng] as [number, number]);
   return (
     <div style={{ height }} className="overflow-hidden rounded-2xl ring-1 ring-line">
-      <MapContainer center={center} zoom={zoom} scrollWheelZoom={false} style={{ height: "100%", width: "100%" }} attributionControl>
+      <MapContainer
+        center={center}
+        zoom={zoom}
+        scrollWheelZoom={false}
+        zoomAnimation={false}
+        fadeAnimation={false}
+        markerZoomAnimation={false}
+        style={{ height: "100%", width: "100%" }}
+        attributionControl
+      >
         <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         {circles.map((c, i) => (
           <Circle key={i} center={[c.lat, c.lng]} radius={c.radiusM} pathOptions={{ color: "#1a6347", weight: 2, dashArray: "6 6", fillColor: "#24c99a", fillOpacity: 0.08 }} />
