@@ -8,24 +8,7 @@ import { createSession, deleteSession } from "@/lib/session";
 import { ROLE_HOME, TRADES, type Role } from "@/lib/constants";
 import { SIDO, DAEGU_SIGUNGU } from "@/config/regions";
 import { saveUpload, validateUpload } from "@/lib/uploads";
-
-export type FormValues = Record<string, string | string[]>;
-export type FormState = {
-  errors?: Record<string, string>;
-  message?: string;
-  values?: FormValues; // 오류 시 입력값 복원용 (비밀번호·파일 제외)
-} | undefined;
-
-// React 19는 액션 제출 후 폼을 초기화하므로, 오류가 나면 입력값을 돌려줘 다시 채운다.
-function echo(formData: FormData): FormValues {
-  const out: FormValues = {};
-  for (const k of new Set(formData.keys())) {
-    if (k === "password" || k.startsWith("$")) continue;
-    const all = formData.getAll(k).filter((v): v is string => typeof v === "string");
-    if (all.length) out[k] = all.length > 1 || k === "trades" || k === "regions" ? all : all[0];
-  }
-  return out;
-}
+import { echo, fieldErrors, type FormState } from "@/lib/forms";
 
 const phone = z
   .string()
@@ -33,15 +16,6 @@ const phone = z
   .regex(/^0\d{1,2}-?\d{3,4}-?\d{4}$/, "연락처 형식을 확인해주세요. (예: 010-1234-5678)");
 const email = z.string().trim().toLowerCase().email("이메일 형식을 확인해주세요.");
 const password = z.string().min(8, "비밀번호는 8자 이상으로 정해주세요.");
-
-function fieldErrors(error: z.ZodError) {
-  const out: Record<string, string> = {};
-  for (const issue of error.issues) {
-    const k = String(issue.path[0] ?? "form");
-    out[k] ??= issue.message;
-  }
-  return out;
-}
 
 async function emailTaken(address: string) {
   return (await db.user.count({ where: { email: address } })) > 0;

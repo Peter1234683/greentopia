@@ -1,4 +1,4 @@
-import type { FormValues } from "@/app/actions/auth";
+import type { FormValues } from "./forms";
 
 // 서버 액션이 돌려준 입력값으로 폼 기본값을 채우는 도우미
 export function formValues(values: FormValues | undefined) {

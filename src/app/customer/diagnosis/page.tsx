@@ -1,13 +1,135 @@
 import type { Metadata } from "next";
-import { ComingSoon } from "@/components/ui";
+import Link from "next/link";
+import { requireRole } from "@/lib/dal";
+import { db } from "@/lib/db";
+import { Badge, ButtonLink, Card, ComingSoon } from "@/components/ui";
+import { JOINT_INTENT_LABEL, STRUCTURE_LABEL, SYMPTOMS, TRADE_LABEL, USAGE_LABEL, parseJson, type Trade } from "@/lib/constants";
+import { buildingAge, monthLabel, won } from "@/lib/format";
+import { BUDGET_OPTIONS } from "@/config/building";
 
 export const metadata: Metadata = { title: "내 집 진단" };
 
-export default function Page() {
+export default async function DiagnosisHub(props: PageProps<"/customer/diagnosis">) {
+  const user = await requireRole("CUSTOMER");
+  const { saved } = await props.searchParams;
+  const buildings = await db.building.findMany({
+    where: { ownerId: user.id },
+    include: {
+      demands: { where: { status: { in: ["ACTIVE", "MATCHED"] } }, orderBy: { createdAt: "desc" }, take: 1 },
+      _count: { select: { documents: { where: { kind: "BILL" } } } },
+    },
+    orderBy: { createdAt: "asc" },
+  });
+
+  if (buildings.length === 0)
+    return (
+      <div className="space-y-4 pt-2">
+        <h1 className="text-2xl font-extrabold">내 집 진단</h1>
+        <Card className="text-center">
+          <div className="text-5xl" aria-hidden="true">🏠</div>
+          <p className="mt-3 text-lg font-bold">먼저 우리 집을 등록해주세요</p>
+          <p className="mt-1 text-sm text-muted">주소만 넣으면 건물 정보를 불러오고, 몇 가지 질문으로 필요한 공사를 찾아드려요.</p>
+          <ButtonLink href="/customer/buildings/new" className="mt-5 w-full">내 건물 등록하기</ButtonLink>
+        </Card>
+      </div>
+    );
+
   return (
-    <div className="pt-2">
-      <h1 className="mb-4 text-2xl font-extrabold">내 집 진단</h1>
-      <ComingSoon milestone={2} title="내 집 진단 화면을 준비하고 있어요" items={["건축물대장으로 건물 정보 불러오기", "생활 언어 질문으로 필요한 공사 찾기", "간이 에너지 진단 · GR-AI 정밀 시뮬레이션 연결"]} />
+    <div className="space-y-5 pt-2">
+      <div className="flex items-end justify-between">
+        <h1 className="text-2xl font-extrabold">내 집 진단</h1>
+        <Link href="/customer/buildings/new" className="text-sm font-semibold text-forest-700">+ 건물 추가</Link>
+      </div>
+
+      {buildings.map((b) => {
+        const dm = b.demands[0];
+        const age = buildingAge(b.approvalDate);
+        const trades = dm ? parseJson<Trade[]>(dm.tradesJson, []) : [];
+        const symptoms = dm ? parseJson<string[]>(dm.symptomsJson, []) : [];
+        const budget = dm ? BUDGET_OPTIONS.find((o) => o.min === dm.budgetMin && o.max === dm.budgetMax) : null;
+        return (
+          <div key={b.id} className="space-y-3">
+            {saved === b.id && (
+              <p role="status" className="rounded-2xl bg-forest-800 px-4 py-3 text-sm text-white">
+                ✅ 공사 수요가 저장됐어요. 비슷한 이웃이 모이면 공동공사를 제안해 드릴게요.
+              </p>
+            )}
+            <Card>
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <p className="text-lg font-bold">{b.nickname ?? b.dong}</p>
+                  <p className="text-sm text-muted">{b.address}</p>
+                </div>
+                <div className="flex shrink-0 flex-col items-end gap-1">
+                  <Badge>{USAGE_LABEL[b.usage]}</Badge>
+                  {b.registrySource === "MOCK" && <Badge tone="warn">가상 대장</Badge>}
+                  {b.registrySource === "MANUAL" && <Badge tone="gray">직접 입력</Badge>}
+                </div>
+              </div>
+              <dl className="mt-4 grid grid-cols-4 gap-2 text-center text-xs">
+                {[
+                  ["지은 지", age != null ? `${age}년` : "-"],
+                  ["구조", STRUCTURE_LABEL[b.structure] ?? "-"],
+                  ["연면적", `${Math.round(b.grossArea)}㎡`],
+                  ["층·세대", `${b.floors}층·${b.households}세대`],
+                ].map(([k, v]) => (
+                  <div key={k} className="rounded-xl bg-surface px-1 py-2">
+                    <dt className="text-muted">{k}</dt>
+                    <dd className="mt-0.5 font-bold text-ink">{v}</dd>
+                  </div>
+                ))}
+              </dl>
+              <Link href={`/customer/buildings/${b.id}/edit`} className="mt-3 inline-block text-sm text-forest-700 underline underline-offset-4">
+                건물 정보 수정
+              </Link>
+            </Card>
+
+            {dm ? (
+              <Card>
+                <div className="flex items-center justify-between">
+                  <p className="font-bold">우리 집에 필요한 공사</p>
+                  <Link href={`/customer/buildings/${b.id}/demand`} className="text-sm text-forest-700">수정 ›</Link>
+                </div>
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {trades.map((t) => <Badge key={t} tone="forest">{TRADE_LABEL[t]}</Badge>)}
+                </div>
+                {symptoms.length > 0 && (
+                  <p className="mt-3 text-sm text-muted">
+                    불편한 점: {symptoms.map((s) => SYMPTOMS.find((x) => x.code === s)?.label).filter(Boolean).join(", ")}
+                  </p>
+                )}
+                <dl className="mt-3 space-y-1.5 text-sm">
+                  <div className="flex justify-between"><dt className="text-muted">희망 시기</dt><dd>{monthLabel(dm.desiredStart)}</dd></div>
+                  <div className="flex justify-between"><dt className="text-muted">예상 예산</dt><dd>{budget?.label ?? "-"}</dd></div>
+                  <div className="flex justify-between"><dt className="text-muted">공동공사</dt><dd>{JOINT_INTENT_LABEL[dm.jointIntent]}</dd></div>
+                  <div className="flex justify-between">
+                    <dt className="text-muted">월 요금</dt>
+                    <dd>
+                      {[dm.billElectric != null && `전기 ${won(dm.billElectric)}`, dm.billGas != null && `가스 ${won(dm.billGas)}`, b._count.documents > 0 && `고지서 ${b._count.documents}장`]
+                        .filter(Boolean)
+                        .join(" · ") || "입력 안 함"}
+                    </dd>
+                  </div>
+                </dl>
+              </Card>
+            ) : (
+              <Card className="bg-forest-900 text-white ring-0">
+                <p className="text-sm text-mint-300">거의 다 왔어요</p>
+                <p className="mt-1 text-lg font-bold">몇 가지 질문으로 필요한 공사를 찾아볼까요?</p>
+                <ButtonLink href={`/customer/buildings/${b.id}/demand`} variant="mint" className="mt-4 w-full">
+                  공사 수요 입력하기
+                </ButtonLink>
+              </Card>
+            )}
+          </div>
+        );
+      })}
+
+      <ComingSoon
+        milestone={3}
+        title="에너지 진단이 곧 열려요"
+        items={["간이 에너지 등급과 같은 연식 평균 비교", "공종별 개선 시 예상 절감량", "GR-AI 정밀 시뮬레이션 연결"]}
+      />
     </div>
   );
 }

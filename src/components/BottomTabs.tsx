@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-export type Tab = { href: string; label: string; icon: string };
+export type Tab = { href: string; label: string; icon: string; also?: string[] };
 
 export function BottomTabs({ tabs, root }: { tabs: Tab[]; root: string }) {
   const pathname = usePathname();
@@ -14,7 +14,8 @@ export function BottomTabs({ tabs, root }: { tabs: Tab[]; root: string }) {
     >
       <ul className="mx-auto flex max-w-md">
         {tabs.map((t) => {
-          const active = t.href === root ? pathname === root : pathname.startsWith(t.href);
+          const active =
+            (t.href === root ? pathname === root : pathname.startsWith(t.href)) || !!t.also?.some((p) => pathname.startsWith(p));
           return (
             <li key={t.href} className="flex-1">
               <Link

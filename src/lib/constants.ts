@@ -20,6 +20,15 @@ export const TRADE_LABEL: Record<Trade, string> = {
   ROOF: "지붕",
 };
 
+// 비전문가용 한 줄 설명
+export const TRADE_DESC: Record<Trade, string> = {
+  WINDOW: "오래된 창을 단열 성능이 좋은 창으로 바꿔 외풍·결로를 줄여요.",
+  EXT_INSULATION: "건물 바깥 벽에 단열재를 덧대 집 전체를 감싸요.",
+  INT_INSULATION: "방 안쪽 벽에 단열재를 보강해요. 세대별로 할 수 있어요.",
+  BOILER: "효율 좋은 콘덴싱 보일러로 바꿔 가스비를 줄여요.",
+  ROOF: "지붕·옥상에 단열을 보강해 꼭대기 층 더위·추위를 줄여요.",
+};
+
 export const USAGE_LABEL: Record<string, string> = {
   DETACHED: "단독주택",
   MULTI_HOUSEHOLD: "다가구주택",

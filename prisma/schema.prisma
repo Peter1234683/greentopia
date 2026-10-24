@@ -102,6 +102,8 @@ model Document {
   owner        User               @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   contractorId String?
   contractor   ContractorProfile? @relation(fields: [contractorId], references: [id], onDelete: Cascade)
+  buildingId   String?
+  building     Building?          @relation(fields: [buildingId], references: [id], onDelete: Cascade)
   kind         String // GR_CERT | LICENSE | BILL | DIAGNOSIS_RESULT | REVIEW_PHOTO | COMPLETION_PHOTO
   path         String
   originalName String
@@ -138,6 +140,7 @@ model Building {
   diagnoses      EnergyDiagnosis[]
   clusterMembers ClusterMember[]
   contracts      Contract[]
+  documents      Document[]
 
   @@index([sigungu, dong])
 }

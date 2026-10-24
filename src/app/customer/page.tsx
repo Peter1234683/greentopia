@@ -56,12 +56,16 @@ export default async function CustomerHome(props: PageProps<"/customer">) {
               <dd className="text-xl font-extrabold">{main.households}</dd>
             </div>
           </dl>
-          {main.demands[0] && (
+          {main.demands[0] ? (
             <div className="mt-4 flex flex-wrap gap-1.5">
               {parseJson<Trade[]>(main.demands[0].tradesJson, []).map((t) => (
                 <Badge key={t} tone="forest">{TRADE_LABEL[t]} 필요</Badge>
               ))}
             </div>
+          ) : (
+            <ButtonLink href={`/customer/buildings/${main.id}/demand`} variant="outline" className="mt-4 w-full py-3">
+              필요한 공사 알려주기
+            </ButtonLink>
           )}
         </Card>
       ) : (
@@ -69,7 +73,11 @@ export default async function CustomerHome(props: PageProps<"/customer">) {
           <p className="text-sm text-mint-300">3분이면 충분해요</p>
           <p className="mt-1 text-xl font-bold">우리 집을 등록하고 에너지 상태를 확인해보세요</p>
           {address && <p className="mt-2 text-sm text-white/70">가입할 때 입력한 주소: {address}</p>}
-          <ButtonLink href="/customer/diagnosis" variant="mint" className="mt-5 w-full">
+          <ButtonLink
+            href={address ? `/customer/buildings/new?address=${encodeURIComponent(String(address))}` : "/customer/buildings/new"}
+            variant="mint"
+            className="mt-5 w-full"
+          >
             내 건물 등록하기
           </ButtonLink>
         </Card>
