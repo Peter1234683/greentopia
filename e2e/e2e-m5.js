@@ -1,0 +1,68 @@
+const { chromium } = require('playwright');
+require('./patch.js');
+const { execSync } = require('child_process');
+const SP = __dirname;
+const B = 'http://localhost:3000';
+const ok = (c, m) => { if (!c) { console.error('FAIL:', m); process.exitCode = 1; } else console.log('ok:', m); };
+const sql = (q) => JSON.parse(execSync(`python3 ${SP}/q.py ` + JSON.stringify(q)).toString());
+async function login(browser, label) {
+  const c = await browser.newContext({ viewport: { width: 390, height: 844 }, locale: 'ko-KR' });
+  const p = await c.newPage();
+  p.errors = []; p.on('pageerror', (e) => p.errors.push(e.message));
+  await p.goto(B + '/login'); await p.click(`button:has-text("${label}")`); await p.click('button[type=submit]');
+  await p.waitForURL((u) => !u.pathname.startsWith('/login'));
+  return p;
+}
+(async () => {
+  const browser = await chromium.launch();
+  const p = await login(browser, '시공업체');
+  ok(await p.isVisible('text=참가 가능한 신규 공고'), 'dashboard alert');
+  ok(await p.isVisible('text=우선 알림'), 'priority alert badge for EXCELLENT grade');
+  await p.goto(B + '/contractor/tenders');
+  const mine = await p.locator('main ul > li').count();
+  await p.goto(B + '/contractor/tenders?scope=all');
+  const all = await p.locator('main ul > li').count();
+  ok(all > mine && mine >= 1, `scope filter (mine ${mine}, all ${all})`);
+  ok(await p.isVisible('text=보일러 공종 등록이 필요해요'), 'ineligible reason shown');
+  await p.screenshot({ path: `${SP}/shots/m5-01-list.png`, fullPage: true });
+  await p.goto(B + '/contractor/tenders');
+  await p.click('main ul > li a >> nth=0'); await p.waitForURL(/tenders\/[^/]+$/);
+  ok(await p.isVisible('text=모든 참가 자격을 충족해요'), 'PQ pass on detail');
+  await p.screenshot({ path: `${SP}/shots/m5-02-detail.png`, fullPage: true });
+  await p.click('text=입찰하기'); await p.waitForURL(/\/bid$/);
+  await p.click('button:has-text("다음")');
+  await p.click('button:has-text("다음")'); await p.waitForSelector('text=모든 유형의 단가를 입력해주세요');
+  ok(true, 'unit table required');
+  const inputs = p.locator('section:not([hidden]) input[type=number]');
+  const n = await inputs.count();
+  for (let i = 0; i < n; i++) await inputs.nth(i).fill(String(400000 + i * 40000));
+  await p.screenshot({ path: `${SP}/shots/m5-03-table.png`, fullPage: true });
+  await p.click('button:has-text("다음")');
+  await p.click('button:has-text("다음")');
+  const cond = p.locator('section:not([hidden]) input');
+  await cond.nth(0).fill('28'); await cond.nth(1).fill('36'); await cond.nth(2).fill('24');
+  await cond.nth(3).fill('시공 2개 조(6명), 고소작업차 1대');
+  await p.fill('section:not([hidden]) textarea', '1주차 실측, 2~3주차 하루 1동씩 근거리 순서 시공, 4주차 점검');
+  await p.click('button:has-text("다음")');
+  await p.screenshot({ path: `${SP}/shots/m5-04-preview.png`, fullPage: true });
+  await p.click('button:has-text("입찰서 제출")'); await p.waitForURL(/\/contractor\/bids/);
+  ok(await p.isVisible('text=입찰서를 제출했어요'), 'submitted');
+  const bid = sql("select b.totalPrice, b.tierPricesJson, b.warrantyMonths from Bid b join ContractorProfile c on c.id=b.contractorId join User u on u.id=c.userId where u.email='contractor@demo.kr' and b.status='SUBMITTED'");
+  console.log('   bid:', JSON.stringify(bid));
+  ok(bid.length === 1 && bid[0].warrantyMonths === 36, 'bid stored');
+  await p.goto(B + '/contractor/tenders'); await p.click('main ul > li a >> nth=0');
+  await p.waitForURL(/tenders\/[^/]+$/); await p.waitForSelector('text=입찰서 수정하기'); ok(true, 'can edit before deadline');
+  await p.click('text=입찰서 수정하기'); await p.click('button:has-text("다음")');
+  ok(await p.inputValue('section:not([hidden]) input[type=number] >> nth=0') === '400000', 'edit prefilled');
+  // 상한 초과
+  await p.locator('section:not([hidden]) input[type=number]').nth(0).fill('9000000');
+  for (let i = 0; i < 2; i++) await p.click('button:has-text("다음")');
+  await p.click('button:has-text("다음")');
+  ok(await p.isVisible('text=상한 초과는 무효예요') && await p.isDisabled('button:has-text("입찰서 제출")'), 'over-cap blocked');
+  ok(p.errors.length === 0, 'no page errors: ' + p.errors.join(' | '));
+
+  const q = await login(browser, '심사 대기 업체');
+  await q.goto(B + '/contractor/tenders?scope=all');
+  ok(await q.isVisible('text=가입 심사 승인 후 참여할 수 있어요'), 'pending contractor cannot bid');
+  await browser.close();
+})().catch((e) => { console.error(e); process.exit(1); });

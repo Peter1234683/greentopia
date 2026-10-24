@@ -10,6 +10,7 @@ import { recomputeContractor } from "@/lib/reviews";
 import { runCollusionCheck } from "@/lib/collusionRun";
 import { SETTINGS_DEFAULTS, SETTINGS_SECTIONS, type SettingsSection } from "@/lib/settings";
 import { validateShape } from "@/lib/settingsValidate";
+import { demoAutoBids } from "@/lib/demo";
 
 export async function reviewContractor(formData: FormData) {
   await requireRole("ADMIN");
@@ -144,4 +145,10 @@ export async function saveSettingsSection(_: SettingsState, formData: FormData):
   });
   revalidatePath("/", "layout");
   return { section, ok: true };
+}
+
+export async function demoAutoBidsAction(formData: FormData) {
+  await requireRole("ADMIN");
+  await demoAutoBids(String(formData.get("tenderId")));
+  revalidatePath("/", "layout");
 }

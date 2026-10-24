@@ -2,53 +2,127 @@
 
 > 혼자 고치면 비싸고, 모아 고치면 싸다.
 
-AI가 이웃 건물의 그린리모델링 공사 수요를 묶고, 시공업체 입찰로 가격을 정하는 민간 공동공사 플랫폼 MVP.
+AI가 이웃 건물의 그린리모델링(GR) 공사 수요를 묶고(**누구와 함께 묶을지**), 시공업체 입찰이 가격을 정하는(**얼마에 공사할지**) 민간 공동공사 플랫폼 MVP입니다. 모바일 우선 웹앱(PWA)이며, 한 앱에 **건물주 · 시공업체 · 운영자** 세 역할이 있습니다.
 
-## 실행
+## 빠른 시작
 
 ```bash
 npm install          # prisma generate 자동 실행
-cp .env.example .env # SESSION_SECRET 은 운영 시 반드시 교체
+cp .env.example .env # 운영 시 SESSION_SECRET, CRON_SECRET 반드시 교체
 npm run setup        # SQLite 스키마 생성 + 대구 데모 데이터 시드
 npm run dev          # http://localhost:3000
 ```
 
 | 명령 | 설명 |
 |---|---|
-| `npm run db:reset` | DB를 비우고 시드를 다시 넣음 |
-| `npm run typecheck` | 라우트 타입 생성 + `tsc` |
-| `npm run lint` | ESLint |
+| `npm run db:reset` | DB를 비우고 시드를 다시 넣음 (데모 시연 전 초기화) |
+| `npm test` | 계산 엔진 단위 테스트 (매칭·가격·입찰·평가·평판·담합·진단 등 12개) |
+| `npm run build && npm run test:e2e` | 브라우저 E2E 회귀 테스트 10개 묶음 (Playwright, 121개 확인 항목) |
+| `npm run typecheck` / `npm run lint` | 타입 검사 / ESLint |
 
-### 데모 계정 (비밀번호 `demo1234`)
+### 데모 계정 (비밀번호 모두 `demo1234`)
 
 | 계정 | 역할 |
 |---|---|
-| customer@demo.kr | 건물주 김그린 (남구 대명동 다가구, 창호·보일러 수요) |
-| contractor@demo.kr | 시공업체 푸른창호이엔지 (승인, 우수 등급) |
-| pending@demo.kr | 시공업체 새길창호 (심사 대기) |
-| admin@demo.kr | 운영자 |
-| owner001~099@demo.kr, c02~c15@demo.kr | 기타 건물주·업체 |
+| `customer@demo.kr` | 건물주 김그린 — 남구 대명동 다가구(1994년), 창호·보일러 수요, AI Cluster 참여 직전 |
+| `contractor@demo.kr` | 시공업체 푸른창호이엔지 — 우수 등급 (발표자용 업체) |
+| `c02@demo.kr`, `c09@demo.kr` | 대구그린리모델링(그린파트너) · 그린웰창호 — 데모 경쟁 업체 |
+| `pending@demo.kr` | 가입 심사 대기 업체 |
+| `admin@demo.kr` | 운영자 |
+| `owner001~099@demo.kr`, `c03~c15@demo.kr` | 그 밖의 건물주 · 업체 |
 
-로그인 화면의 데모 계정 버튼은 개발 모드 또는 `SHOW_DEMO_ACCOUNTS=1` 일 때만 보입니다.
+로그인 화면의 데모 계정 버튼은 개발 모드 또는 `SHOW_DEMO_ACCOUNTS=1` 일 때만 보입니다. 관리자 "데모 자동 입찰" 버튼은 개발 모드 또는 `DEMO_TOOLS=1` 일 때만 보입니다.
+
+## 데모 시나리오 (고객 1명 · 업체 3곳, 약 10분)
+
+`npm run db:reset` 후 순서대로 진행합니다. 같은 흐름이 `e2e/e2e-demo.js` 로 자동 검증됩니다.
+
+1. **건물주** `customer@demo.kr` → 내 집 진단에서 *간이 진단 받기* (D등급, 공종별 절감 범위) → 공동공사 탭에서 *혼자 vs 같이* 비교 → **Cluster #7 고성능 창호 공동교체**에 *공동견적 참여하기*. 이웃 3동이 먼저 참여해 있어 4동이 되는 순간 입찰 공고 초안이 생깁니다.
+2. **운영자** `admin@demo.kr` → 대시보드 *입찰 방식 확정 대기* → 추천 방식(근거 포함) 확인 → *확정하고 공고 열기* → *🎬 데모: 다른 자격 업체 자동 입찰* (권역 업체 2곳 입찰).
+3. **업체** `contractor@demo.kr` → 홈의 *참가 가능한 신규 공고(우선 알림)* → 공고 상세(PQ 자동 확인) → 입찰서 위저드(유형별 ㎡ 단가표 → 물량 구간 가산율 → 공사 조건 → 미리보기) → 제출.
+4. **운영자** → 공고 상세 *지금 마감하고 평가 실행* → 종합평가 표(가격·실적·기간·A/S·평판, 균형가격·덤핑 감점) → 낙찰 · 건물별 계약 생성.
+5. **건물주** → 홈 *지금 확인할 일* → 공동견적 비교(업체별 우리 집 금액) → 개별 견적 입력해 비교 → *참여 확정하고 현장확인 받기*.
+6. **낙찰 업체** → 시공 관리(동선 지도·달력) → 실측 물량 입력해 *현장확인 완료* → **건물주** 계약서 서명 → 업체 *착공* → 사진과 함께 *완료 보고*.
+7. **건물주** → *공사 완료 · 리뷰 남기기* (별점 6항목·불만 태그·사진) → 업체 평판·등급 즉시 갱신, 고객 포인트 적립.
+8. **운영자** → 리뷰·PQ 탭에서 *리뷰에서 자주 나온 불만 → PQ 규칙 후보*(시드: 한빛보일러 "하자 처리 지연")를 규칙으로 추가 → 해당 업체는 다음 공고부터 PQ 탈락. 담합 감시 탭의 *입찰가 근접* 플래그 확인.
+
+그 밖에 시드에 들어 있는 상태: 서구 창호 공고(경쟁 입찰 2건), 달서구 보일러 공고(입찰 1건 → 마감하면 유찰·재공고 → 다시 유찰되면 수의계약 추천), 북구 외단열 공고 초안, 2025년 완료 공동공사 5건과 리뷰·후속 리뷰.
+
+## 기능
+
+**건물주** (UX 목표: 3분 안에 우리 집 상태와 같이 고치면 얼마나 아끼는지 확인)
+- 회원 유형 선택 온보딩 · 주소로 건축물대장 불러오기(mock 어댑터) · 생활 언어 질문 → 공사 수요 태그
+- 에너지 진단: 간이 진단(범위·간이 등급·같은 연식 평균 비교·공종별 절감 차트) / GR-AI 외부 링크 + 결과 입력 / API 연동 자리
+- 그린리모델링 알아보기 카드 (`content/learn/*.md`, 비개발자 편집)
+- 공동공사: AI Cluster 카드(묶인 이유·지도·참여 현황) · 동네/집 유형/공종 토글 시뮬레이션 · 이자지원 예시
+- 견적 비교 · 참여 확정/거절 · 수의계약 전환 동의 · 계약 서명 · 8단계 타임라인 · 지원사업 요건 대조 · A/S 요청
+- 리뷰(1공사 1리뷰 + 6개월·1년 하자 후속) · 업체 프로필 · 신고 · 알림 · 큰 글씨 모드
+
+**시공업체** (UX 목표: 내 주변 공사 물량을 찾아 수주하고, 평판으로 혜택을 받는다)
+- 가입 + GR 증빙 업로드 → 운영자 심사(PQ 1차) · 대시보드(수주액·진행 공사·우선 알림)
+- 입찰 공고 지도/목록 · 필터 · 참가 자격 사유 표시 · 5단계 입찰 위저드(마감 전 수정, 마감 후 봉인)
+- 내 입찰(평가 항목별 점수 공개) · 시공 관리(현장확인·일정 달력·근거리 동선·완료 보고)
+- 내 업체: 평판 상세·등급·혜택·새싹 트랙·리뷰 답글·신고
+
+**운영자**
+- 처리할 일 대시보드 · 업체 심사 · Cluster 지도/매칭 실행 · 입찰 방식 확정(공개/제한/지명/수의) · 마감·평가 · 유찰·재공고
+- 리뷰 신고 처리 · PQ 규칙 후보 → 규칙 추가 · 리뷰 이상치 · 담합 감시 · 수의계약 비중 · 설정 편집기
+
+## 핵심 비즈니스 로직
+
+| 영역 | 파일 | 요약 |
+|---|---|---|
+| AI 매칭 | `src/lib/matching/engine.ts` | Hard Filter(반경·시기·유사 공종·의향) → 적합도 100점(공종30·거리20·시기20·규모10·물량10·시공조건10) → 크기 제약 탐욕 군집화(모든 쌍이 필터 통과) |
+| 가격 | `src/lib/pricing.ts` | 물량(창호 ㎡, 보일러 대 …) × 유형 보정 × 단가. 공동가는 할인 가정치 → 실제 낙찰 표본 3건 이상이면 실제 단가 범위로 자동 전환 |
+| 입찰 방식 추천 | `src/lib/bidding/recommend.ts` | 재유찰→수의, 권역 자격업체 부족·노후 건물 다수→지명, 고난도·대형→제한, 그 외 공개 |
+| PQ | `src/lib/bidding/eligibility.ts` | 통과/탈락 게이트. 면허·GR·하자보증·행정처분 + 리뷰 불만 비율 규칙 + 방식별 조건 |
+| 종합평가 | `src/lib/bidding/evaluate.ts` | 가격50·실적20·기간10·A/S10·평판10 (소형은 간이 배점). 균형가격(절사 평균) 대비 저가 → 감점, 사유서 없으면 2배 |
+| 마감·낙찰·유찰 | `src/lib/bidding/close.ts` | 유효 입찰 부족·전원 상한 초과 → 유찰 → 권역 확대 재공고 → 재유찰 시 수의 추천(직전 상한 이하) |
+| 평판·등급 | `src/lib/reputation.ts` | 최근 가중 별점 + 하자 처리율 + 기간 준수율 − 불만 태그 감점 → 새싹/일반/우수/그린파트너 |
+| 담합 감시 | `src/lib/collusion.ts` | 같은 두 업체의 번갈아 낙찰, 입찰가 1% 이내 근접 |
+| 간이 진단 | `src/lib/diagnosis/engine.ts` | 연식·구조·유형 기준 소요량 + 세대 기준 고지서 보정, 범위 출력, 공종 효과는 곱으로 결합 |
+
+**원칙**: 확정되지 않은 수치(단가·할인율·배점·등급 기준·지원 요건)는 모두 `src/config/*` 기본값 + 관리자 설정 화면에서 바꾸는 **가정치**이며, 화면에 근거를 작게 표기합니다. 계약은 건물별 개별 체결이고 플랫폼은 공동발주 대행·중개자입니다.
 
 ## 구조
 
 ```
-prisma/schema.prisma   데이터 모델 (SQLite, PostgreSQL 전환 고려)
-prisma/seed.ts         대구 가상 데이터 (건물 100 · 업체 15 · 과거 공동공사 4건 · 리뷰)
-src/config/            관리자가 바꿀 수 있는 설정 기본값 (지역, 창호면적 비율·예산 구간, 이후 가격 가정치·배점 등)
-src/lib/adapters/      외부 연동 어댑터 (건축물대장: mock | public — BUILDING_REGISTRY_PROVIDER)
-src/lib/diagnosis/     에너지 진단 (engine.ts 순수 계산 · adapters.ts SIMPLE / GRAI_LINK / GRAI_API 자리)
-src/config/diagnosis.ts 간이 진단 가정치 (연식별 기준 소요량, 공종별 절감률, 등급 구간, 외부 링크)
-content/learn/*.md     그린리모델링 알아보기 카드 (비개발자 편집 — content/README.md 참고)
-src/lib/constants.ts   코드값과 한국어 라벨
-src/lib/jwt.ts, session.ts, dal.ts   자체 세션 인증 (JWT 쿠키) + 역할 검사
-src/proxy.ts           비로그인 사용자 보호 구역 차단 (Next 16의 middleware)
-src/app/(customer|contractor|admin)  역할별 화면
-storage/uploads/       업로드 파일 (공개 폴더 아님, /files/[id] 로 권한 확인 후 제공)
+prisma/schema.prisma    데이터 모델 (SQLite, PostgreSQL 전환 고려 — enum/배열 대신 String, *Json 필드)
+prisma/seed.ts          대구 가상 데이터 (건물 100 · 업체 15 · 과거 공동공사 5 · 리뷰 · 진행 중 공고)
+content/learn/*.md      교육 카드 (content/README.md 참고)
+src/config/             설정 기본값: matching · pricing · bidding · reputation · support · diagnosis · building · regions
+src/lib/settings.ts     기본값 + 관리자 Config 덮어쓰기 (섹션별 JSON, 모양·타입 검증)
+src/lib/adapters/       외부 연동 어댑터 (건축물대장 mock | public)
+src/lib/diagnosis/      에너지 진단 엔진·어댑터 (SIMPLE | GRAI_LINK | GRAI_API 자리)
+src/lib/matching/       AI 매칭 엔진·실행
+src/lib/bidding/        PQ · 방식 추천 · 입찰 계산 · 평가 · 공고 수명주기
+src/app/(customer|contractor|admin)  역할별 화면 / src/app/actions  서버 액션
+src/components/map/     지도 (Leaflet + OSM, props 인터페이스로 카카오맵 교체 가능)
+src/proxy.ts            비로그인 접근 차단 (Next 16 의 middleware) — 역할 검사는 서버의 requireRole()
+storage/uploads/        업로드 파일 (공개 폴더 아님, /files/[id] 에서 권한 확인 후 제공)
+tests/                  단위 테스트 · e2e/  브라우저 E2E
 ```
 
-## 마일스톤 진행
+기술 스택: Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS 4 · Prisma 6 + SQLite · 자체 JWT 쿠키 세션(jose·bcrypt) · zod · Leaflet · Recharts · marked.
+
+## 배포 시 할 일
+
+1. **DB**: `prisma/schema.prisma` 의 provider 를 `postgresql` 로, `DATABASE_URL` 을 Postgres(예: Supabase)로 바꾸고 `prisma migrate` 로 마이그레이션을 만듭니다.
+2. **비밀값**: `SESSION_SECRET`(32자 이상), `CRON_SECRET` 설정. `SHOW_DEMO_ACCOUNTS`, `DEMO_TOOLS` 는 끕니다.
+3. **마감 자동 평가**: 스케줄러가 `GET /api/cron/close-tenders` 를 `Authorization: Bearer $CRON_SECRET` 로 주기 호출.
+4. **업로드**: 서버리스 환경이면 `src/lib/uploads.ts` 를 S3/Supabase Storage 로 교체.
+5. **지도 타일**: OpenStreetMap 공용 타일은 대량 트래픽 용도가 아니므로 상용 타일(또는 카카오맵 컴포넌트)로 교체.
+6. **외부 API**: 건축물대장 Open API 키 발급 후 `PublicDataBuildingRegistry` 구현(`BUILDING_REGISTRY_PROVIDER=public`), GR-AI 측과 협의되면 `graiApiAdapter` 구현.
+
+## 알려진 한계 · 다음 단계
+
+- 건축물대장·GR-AI 는 mock/수동 입력이며, 지원사업 안내는 규칙 기반 요건 대조(RAG 기능 자리)입니다.
+- 가격·진단·평가의 모든 수치는 운영 근거 자료로 검증해야 하는 가정치입니다 (교육 카드의 44.4%·60% 수치도 "출처 확인 중").
+- 알림은 앱 내 알림만 있습니다 (웹 푸시·문자 미구현). 결제·전자서명은 범위 밖입니다 (계약 서명은 동의 기록).
+- 한 계정이 두 역할을 갖는 경우는 고려하지 않았습니다.
+- 매칭 가중치는 설정값이며, 실제 낙찰·리뷰 데이터로 학습해 조정하는 단계는 아직 없습니다.
+
+## 마일스톤
 
 - [x] 1. 프로젝트 세팅 · DB 스키마 · 시드 · 인증 · 회원 유형 온보딩
 - [x] 2. 건물 등록(건축물대장 mock) + 공사 수요 입력
@@ -59,4 +133,4 @@ storage/uploads/       업로드 파일 (공개 폴더 아님, /files/[id] 로 �
 - [x] 7. 견적 비교 · 계약 · 내 공사
 - [x] 8. 리뷰 → 평판 → 등급·혜택 → PQ 규칙 후보
 - [x] 9. 관리자 화면 + 담합 감시
-- [ ] 10. PWA · 다듬기 · 데모 시나리오
+- [x] 10. PWA · 다듬기 · 데모 시나리오

@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { Badge, ButtonLink, Card, SectionTitle } from "@/components/ui";
 import { TRADE_LABEL, USAGE_LABEL, parseJson, type Trade } from "@/lib/constants";
 import { loadLearnCards } from "@/lib/content";
+import { ensureFollowupReminders } from "@/lib/reviews";
 
 export default async function CustomerHome(props: PageProps<"/customer">) {
   const user = await requireRole("CUSTOMER");
@@ -21,6 +22,14 @@ export default async function CustomerHome(props: PageProps<"/customer">) {
     : 0;
 
   const cards = await loadLearnCards();
+  await ensureFollowupReminders(user.id);
+  const todos = await db.contract.findMany({
+    where: {
+      building: { ownerId: user.id },
+      OR: [{ status: { in: ["PENDING", "READY"] } }, { status: "SIGNED", project: { status: "COMPLETED", reviews: { none: {} } } }],
+    },
+    include: { tender: { include: { cluster: true } }, contractor: true },
+  });
 
   return (
     <div className="space-y-6">
@@ -32,6 +41,25 @@ export default async function CustomerHome(props: PageProps<"/customer">) {
           <span className="text-forest-700">얼마나 아낄 수 있을까요?</span>
         </h1>
       </section>
+
+      {todos.length > 0 && (
+        <Card className="ring-2 ring-mint-400">
+          <p className="font-bold">📌 지금 확인할 일</p>
+          <ul className="mt-2 divide-y divide-line">
+            {todos.map((t) => (
+              <li key={t.id}>
+                <Link href={t.status === "SIGNED" ? `/customer/reviews/new?contract=${t.id}` : `/customer/projects/${t.tender?.clusterId}`} className="flex items-center justify-between py-2.5 text-sm">
+                  <span>
+                    {t.status === "PENDING" ? "업체가 정해졌어요 · 참여 여부 결정" : t.status === "READY" ? "현장확인 완료 · 계약서 서명" : "공사 완료 · 리뷰 남기기"}
+                    <span className="block text-xs text-muted">{t.contractor.companyName} · Cluster #{t.tender?.cluster.code}</span>
+                  </span>
+                  <span aria-hidden="true" className="text-muted">›</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
 
       {main ? (
         <Card>

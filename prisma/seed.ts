@@ -104,13 +104,13 @@ function makeBuildingData(sigungu: string, dongName: string, usageHint?: string)
   };
 }
 
-function makeDemand(trades: string[], status = "ACTIVE") {
+function makeDemand(trades: string[], status = "ACTIVE", startMonths: [number, number] = [1, 6]) {
   const symptoms = [...new Set(trades.flatMap((t) => SYMPTOMS_BY_TRADE[t]))];
   const budget = pick([[500, 1000], [1000, 2000], [1500, 3000], [2000, 4000]] as const);
   return {
     tradesJson: json(trades),
     symptomsJson: json(symptoms),
-    desiredStart: monthsFromNow(int(1, 6)),
+    desiredStart: monthsFromNow(int(startMonths[0], startMonths[1])),
     budgetMin: budget[0] * 10000,
     budgetMax: budget[1] * 10000,
     jointIntent: weighted<string>([["YES", 6], ["MAYBE", 3], ["NO", 1]]),
@@ -321,7 +321,8 @@ async function main() {
     for (let i = 0; i < n; i++) {
       const { building } = await createOwnerWithBuilding(makeBuildingData(h.sigungu, h.dong, h.usage));
       const trades = rand() < 0.75 ? h.trades.slice(0, 1) : h.trades;
-      await db.retrofitDemand.create({ data: { ...makeDemand(trades), buildingId: building.id } });
+      // 핫스팟은 동네 단위로 시기가 비슷하다 (데모 고객: 3개월 뒤) → AI 매칭이 안정적으로 묶을 수 있게
+      await db.retrofitDemand.create({ data: { ...makeDemand(trades, "ACTIVE", [2, 4]), buildingId: building.id } });
       total++;
     }
   }
@@ -457,6 +458,8 @@ async function main() {
       if (m.demandId) await db.retrofitDemand.update({ where: { id: m.demandId }, data: { status: "MATCHED" } });
     }
     await db.cluster.update({ where: { id: demoMember.clusterId }, data: { status: "RECRUITING" } });
+  } else {
+    throw new Error("데모 고객이 어떤 Cluster 에도 묶이지 않았어요. 핫스팟 시드 조건을 확인하세요.");
   }
 
   // 진행 중 입찰 공고: Cluster 전원 참여 → 공고 초안 → (일부) 운영자 확정

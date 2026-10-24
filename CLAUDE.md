@@ -9,3 +9,5 @@
 - DB는 SQLite: enum·배열·Json 대신 String 사용 (`*Json` 필드는 JSON 문자열, 허용값은 `src/lib/constants.ts`).
 - 역할 검사는 서버에서 `requireRole()` (src/lib/dal.ts). proxy.ts 는 로그인 여부만 낙관적으로 확인.
 - 계약은 건물별 개별 체결, 플랫폼은 공동발주 대행·중개자.
+- 확인: `npm run typecheck && npm run lint && npm test` (계산 엔진), 화면 흐름은 `npm run build && npm run test:e2e`.
+- 시드는 결정적 난수를 쓴다. 데모 고객이 Cluster 에 묶이지 않으면 시드가 오류로 멈춘다 (README 데모 시나리오 참고).

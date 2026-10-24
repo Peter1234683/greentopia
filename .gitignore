@@ -46,3 +46,6 @@ next-env.d.ts
 /prisma/*.db-journal
 /storage/uploads/*
 !/storage/uploads/sample-gr-cert.pdf
+
+# E2E 스크린샷·로그
+/e2e/shots/

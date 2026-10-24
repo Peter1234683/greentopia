@@ -2,6 +2,7 @@ import { requireRole } from "@/lib/dal";
 import { AppHeader } from "@/components/AppHeader";
 import { BottomTabs, type Tab } from "@/components/BottomTabs";
 import { Badge } from "@/components/ui";
+import { Bell, unreadCount } from "@/components/Notifications";
 import { CONTRACTOR_REVIEW_STATUS_LABEL } from "@/lib/constants";
 
 const TABS: Tab[] = [
@@ -15,6 +16,7 @@ const TABS: Tab[] = [
 export default async function ContractorLayout({ children }: LayoutProps<"/contractor">) {
   const user = await requireRole("CONTRACTOR");
   const p = user.contractorProfile!;
+  const unread = await unreadCount(user.id);
   return (
     <>
       <AppHeader
@@ -24,6 +26,7 @@ export default async function ContractorLayout({ children }: LayoutProps<"/contr
           <span className="flex items-center gap-2 text-sm text-white/80">
             <span className="max-w-[9rem] truncate">{p.companyName}</span>
             {p.reviewStatus !== "APPROVED" && <Badge tone="warn">{CONTRACTOR_REVIEW_STATUS_LABEL[p.reviewStatus]}</Badge>}
+            <Bell href="/contractor/notifications" count={unread} dark />
           </span>
         }
       />

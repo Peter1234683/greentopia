@@ -1,6 +1,7 @@
 import { requireRole } from "@/lib/dal";
 import { AppHeader } from "@/components/AppHeader";
 import { BottomTabs, type Tab } from "@/components/BottomTabs";
+import { Bell, unreadCount } from "@/components/Notifications";
 
 const TABS: Tab[] = [
   { href: "/customer", label: "홈", icon: "🏠", also: ["/customer/learn"] },
@@ -11,10 +12,11 @@ const TABS: Tab[] = [
 ];
 
 export default async function CustomerLayout({ children }: LayoutProps<"/customer">) {
-  await requireRole("CUSTOMER");
+  const user = await requireRole("CUSTOMER");
+  const unread = await unreadCount(user.id);
   return (
     <>
-      <AppHeader home="/customer" />
+      <AppHeader home="/customer" right={<Bell href="/customer/notifications" count={unread} />} />
       <main className="mx-auto w-full max-w-md flex-1 px-5 pb-28 pt-2">{children}</main>
       <BottomTabs tabs={TABS} root="/customer" />
     </>

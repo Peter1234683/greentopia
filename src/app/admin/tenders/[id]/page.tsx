@@ -6,7 +6,8 @@ import { getSettings } from "@/lib/settings";
 import { loadContractors, loadPQRules } from "@/lib/bidding/contractors";
 import { checkEligibility } from "@/lib/bidding/eligibility";
 import { clusterEstimate } from "@/lib/bidding/tenders";
-import { closeTenderAction, confirmTenderAction } from "@/app/actions/admin";
+import { closeTenderAction, confirmTenderAction, demoAutoBidsAction } from "@/app/actions/admin";
+import { demoToolsEnabled } from "@/lib/demo";
 import { Badge, Button, Card } from "@/components/ui";
 import { MethodBadge } from "@/components/contractor/TenderBits";
 import { CONTRACT_STATUS_LABEL, GRADE_LABEL, TENDER_METHOD_LABEL, TENDER_STATUS_LABEL, TRADE_LABEL, parseJson, type Grade, type Trade } from "@/lib/constants";
@@ -125,6 +126,12 @@ export default async function AdminTender(props: PageProps<"/admin/tenders/[id]"
             <input type="hidden" name="tenderId" value={t.id} />
             <Button variant="outline" className="w-full py-2.5">지금 마감하고 평가 실행</Button>
           </form>
+          {demoToolsEnabled() && (
+            <form action={demoAutoBidsAction} className="mt-2">
+              <input type="hidden" name="tenderId" value={t.id} />
+              <Button variant="ghost" className="w-full py-2.5 text-sm">🎬 데모: 다른 자격 업체 자동 입찰</Button>
+            </form>
+          )}
         </Card>
       )}
 
