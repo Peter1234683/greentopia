@@ -11,6 +11,7 @@ import bcrypt from "bcryptjs";
 import { DAEGU_DISTRICTS, SIDO, type District } from "../src/config/regions";
 import { runMatching } from "../src/lib/matching/run";
 import { recomputeContractor } from "../src/lib/reviews";
+import { runCollusionCheck } from "../src/lib/collusionRun";
 import { createTenderDraft } from "../src/lib/bidding/tenders";
 import { confirmTender } from "../src/lib/bidding/lifecycle";
 import { bidTotal, tierRanges } from "../src/lib/bidding/bidMath";
@@ -164,13 +165,14 @@ type PastJob = {
   completed: string;
   // 낙찰 업체 리뷰 성향: good | mixed | defect
   mood: "good" | "mixed" | "defect";
+  closePrices?: boolean; // 담합 감시 데모: 2·3위 입찰가를 비정상적으로 근접하게
 };
 const PAST: PastJob[] = [
   { code: 1, sigungu: "남구", dong: "봉덕동", trade: "WINDOW", size: 6, bidders: ["contractor@demo.kr", "c09@demo.kr", "c02@demo.kr"], completed: "2025-05-20", mood: "good" },
   { code: 2, sigungu: "북구", dong: "산격동", trade: "EXT_INSULATION", usage: "MULTI_HOUSEHOLD", size: 5, bidders: ["c06@demo.kr", "c02@demo.kr", "c07@demo.kr"], completed: "2025-07-15", mood: "mixed" },
   { code: 3, sigungu: "달서구", dong: "본리동", trade: "BOILER", usage: "MULTIPLEX", size: 5, bidders: ["c05@demo.kr", "c08@demo.kr", "c12@demo.kr"], completed: "2025-09-30", mood: "defect" },
   { code: 4, sigungu: "수성구", dong: "만촌동", trade: "WINDOW", size: 4, bidders: ["c02@demo.kr", "contractor@demo.kr", "c03@demo.kr"], completed: "2025-11-12", mood: "good" },
-  { code: 5, sigungu: "동구", dong: "신암동", trade: "EXT_INSULATION", usage: "MULTI_HOUSEHOLD", size: 5, bidders: ["c02@demo.kr", "c07@demo.kr", "c03@demo.kr"], completed: "2025-03-10", mood: "good" },
+  { code: 5, sigungu: "동구", dong: "신암동", trade: "EXT_INSULATION", usage: "MULTI_HOUSEHOLD", size: 5, bidders: ["c02@demo.kr", "c07@demo.kr", "c03@demo.kr"], completed: "2025-03-10", mood: "good", closePrices: true },
 ];
 
 // 시드용 단가 가정 (원). 실제 화면의 예상가 산정은 src/config/pricing.ts(마일스톤 4)에서 관리한다.
@@ -365,6 +367,7 @@ async function main() {
     });
 
     const factors = [0.84, 0.9, 0.95].map((f) => f + (rand() - 0.5) * 0.04);
+    if (job.closePrices) factors[2] = factors[1] * 1.003;
     for (const [rank, email] of job.bidders.entries()) {
       const factor = factors[rank];
       const total = members.reduce((s, m) => s + jobAmount(job.trade, m, factor), 0);
@@ -508,6 +511,8 @@ async function main() {
     await createTenderDraft(ext.id); // 운영자 확정 대기 (DRAFT)
   }
 
+  await runCollusionCheck();
+
   const counts = {
     users: await db.user.count(),
     buildings: await db.building.count(),
@@ -517,6 +522,7 @@ async function main() {
     proposedClusters: await db.cluster.count({ where: { status: { in: ["PROPOSED", "RECRUITING"] } } }),
     tenders: await db.tender.groupBy({ by: ["status"], _count: true }),
     openBids: await db.bid.count({ where: { status: "SUBMITTED" } }),
+    collusionFlags: await db.collusionFlag.count(),
     contracts: await db.contract.count(),
     reviews: await db.review.count(),
   };

@@ -8,6 +8,7 @@ import { memberAmount, tierFor, type Tier, type UnitTable } from "./bidMath";
 import { evaluateBids, type EvalContractor } from "./evaluate";
 import { loadContractors, loadPQRules } from "./contractors";
 import { clusterEstimate, createTenderDraft, tenderEligInput } from "./tenders";
+import { runCollusionCheck } from "@/lib/collusionRun";
 
 async function gradeBonuses() {
   const benefits = await db.benefit.findMany({ where: { kind: "REPUTATION_BONUS" } });
@@ -67,9 +68,13 @@ export async function closeTender(tenderId: string, opts: { force?: boolean } = 
         : ranked.length === 0 && results.some((r) => r.pqDetails.overCap)
           ? "모든 입찰이 공고 상한을 넘었어요"
           : `유효 입찰이 ${ranked.length}곳으로 최소 ${minBidders}곳에 못 미쳐요`;
-    return failTender(tenderId, reason);
+    const r = await failTender(tenderId, reason);
+    await runCollusionCheck();
+    return r;
   }
-  return awardTender(tenderId, ranked[0].bidId);
+  const r = await awardTender(tenderId, ranked[0].bidId);
+  await runCollusionCheck();
+  return r;
 }
 
 async function failTender(tenderId: string, reason: string) {

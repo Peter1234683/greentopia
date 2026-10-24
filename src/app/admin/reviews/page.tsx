@@ -56,8 +56,8 @@ export default async function AdminReviews() {
                 <input type="hidden" name="label" value={c.label} />
                 <input type="hidden" name="ratio" value={pc.tagRatio} />
                 <input type="hidden" name="minReviews" value={pc.minReviews} />
-                <Button name="action" value="WARN" variant="outline" className="py-2 text-sm">경고 규칙으로 추가</Button>
-                <Button name="action" value="FAIL" className="py-2 text-sm">PQ 탈락 규칙으로 추가</Button>
+                <Button name="ruleAction" value="WARN" variant="outline" className="py-2 text-sm">경고 규칙으로 추가</Button>
+                <Button name="ruleAction" value="FAIL" className="py-2 text-sm">PQ 탈락 규칙으로 추가</Button>
               </form>
             </Card>
           ))}
