@@ -147,6 +147,9 @@ export default async function ProjectDetail(props: PageProps<"/customer/projects
             </p>
           )}
           <Basis>계약은 우리 건물과 {contract.contractor.companyName} 사이에 개별로 체결돼요. 그린토피아는 공동발주를 대행·중개해요.</Basis>
+          {["READY", "SIGNED"].includes(contract.status) && (
+            <ButtonLink href={`/customer/contracts/${contract.id}`} variant="outline" className="mt-3 w-full">📄 계약 요약서 · 단계별 지급</ButtonLink>
+          )}
         </Card>
       )}
 

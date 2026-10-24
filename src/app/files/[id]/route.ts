@@ -22,7 +22,15 @@ export async function GET(_req: Request, ctx: RouteContext<"/files/[id]">) {
       doc.kind === "REVIEW_PHOTO" ||
       doc.kind === "COMMUNITY_PHOTO" ||
       (doc.kind === "LOUNGE_FILE" && session.role === "CONTRACTOR"));
-  if (!doc || !allowed)
+  // 계약한 업체는 해당 건물의 진단 사진(준공 검측 '시공 전' 비교용)을 볼 수 있다
+  const contractorBefore =
+    !!doc &&
+    !allowed &&
+    doc.kind === "DIAGNOSIS_PHOTO" &&
+    session.role === "CONTRACTOR" &&
+    !!doc.buildingId &&
+    (await db.contract.count({ where: { buildingId: doc.buildingId, status: "SIGNED", contractor: { userId: session.userId } } })) > 0;
+  if (!doc || !(allowed || contractorBefore))
     return new Response("파일을 찾을 수 없어요.", { status: 404 });
   const data = await readFile(path.join(process.cwd(), "storage", doc.path));
   return new Response(data, {

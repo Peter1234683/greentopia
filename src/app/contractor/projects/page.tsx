@@ -10,7 +10,8 @@ import { MapView } from "@/components/map/MapView";
 import { Badge, Button, Card, Input } from "@/components/ui";
 import { CONTRACT_STATUS_LABEL, PROJECT_STATUS_LABEL, TRADE_LABEL, parseJson, type Trade } from "@/lib/constants";
 import { dateValue, won } from "@/lib/format";
-import { CompleteForm } from "./ProjectActions";
+import { CompleteForm, LotForm } from "./ProjectActions";
+import { reportMaterials } from "@/app/actions/payment";
 
 export const metadata: Metadata = { title: "시공 관리" };
 
@@ -41,12 +42,14 @@ function MonthCalendar({ events }: { events: { date: Date; label: string }[] }) 
   );
 }
 
+const PAY_LABEL: Record<string, string> = { DEPOSIT: "착공금", INTERIM: "중도금", COMPLETION: "준공금", RETENTION: "유보금" };
+
 export default async function ContractorProjects() {
   const user = await requireRole("CONTRACTOR");
   const settings = await getSettings();
   const contracts = await db.contract.findMany({
     where: { contractorId: user.contractorProfile!.id, tenderId: { not: null } },
-    include: { building: { include: { owner: true, clusterMembers: true } }, project: true, tender: { include: { cluster: true } } },
+    include: { building: { include: { owner: true, clusterMembers: true } }, project: { include: { inspection: true } }, tender: { include: { cluster: true } }, milestones: { orderBy: { seq: "asc" } } },
     orderBy: { createdAt: "desc" },
   });
   const groups = new Map<string, typeof contracts>();
@@ -137,6 +140,30 @@ export default async function ContractorProjects() {
                   )}
                   {c.project && ["IN_PROGRESS", "AS"].includes(c.project.status) && <CompleteForm contractId={c.id} isAS={c.project.status === "AS"} />}
                   {c.project?.status === "AS" && c.project.completionNote && <p className="mt-2 text-sm text-warn">{c.project.completionNote}</p>}
+                  {c.milestones.length > 0 && (
+                    <div className="mt-3">
+                      <p className="text-xs font-semibold text-muted">단계별 지급 (데모 · 실제 송금 없음)</p>
+                      <ol className="mt-1 grid grid-cols-4 gap-1 text-center text-[0.65rem]">
+                        {c.milestones.map((m) => (
+                          <li key={m.id} className={`rounded-lg px-1 py-1.5 ${m.status === "RELEASED" ? "bg-forest-800 text-white" : m.status === "READY" ? "bg-warn-bg text-warn" : "bg-surface text-muted"}`}>
+                            {PAY_LABEL[m.stage]}<br />{m.status === "RELEASED" ? "승인" : m.status === "READY" ? "승인 대기" : "대기"}
+                          </li>
+                        ))}
+                      </ol>
+                    </div>
+                  )}
+                  {c.project?.status === "IN_PROGRESS" && c.status === "SIGNED" && !c.project.materialsDeliveredAt && (
+                    <form action={reportMaterials} className="mt-2">
+                      <input type="hidden" name="contractId" value={c.id} />
+                      <Button variant="outline" className="w-full py-2.5 text-sm">📦 자재 입고 보고 (중도금 검수 요청)</Button>
+                    </form>
+                  )}
+                  {c.project?.materialsDeliveredAt && c.project.status === "IN_PROGRESS" && <p className="mt-2 text-xs text-muted">자재 입고 보고 {c.project.materialsDeliveredAt.toLocaleDateString("ko-KR")}</p>}
+                  {c.project?.inspection && (
+                    c.project.inspection.ownerApproved
+                      ? <p className="mt-2 text-sm text-forest-700">✔ 준공 검측 건물주 승인 완료{c.project.inspection.lotNumber ? ` · LOT ${c.project.inspection.lotNumber}` : ""}</p>
+                      : <LotForm contractId={c.id} lotNumber={c.project.inspection.lotNumber} />
+                  )}
                 </Card>
               );
             })}

@@ -117,7 +117,7 @@ model Document {
   contractor   ContractorProfile? @relation(fields: [contractorId], references: [id], onDelete: Cascade)
   buildingId   String?
   building     Building?          @relation(fields: [buildingId], references: [id], onDelete: Cascade)
-  kind         String // GR_CERT | LICENSE | BILL | DIAGNOSIS_RESULT | REVIEW_PHOTO | COMPLETION_PHOTO | COMMUNITY_PHOTO | LOUNGE_FILE
+  kind         String // GR_CERT | LICENSE | BILL | DIAGNOSIS_RESULT | REVIEW_PHOTO | COMPLETION_PHOTO | COMMUNITY_PHOTO | LOUNGE_FILE | LOT_PHOTO
   path         String
   originalName String
   mimeType     String
@@ -350,6 +350,7 @@ model Project {
   scheduledStart DateTime? // 업체가 잡은 시공 예정일
   siteCheckedAt  DateTime?
   completionNote String?
+  materialsDeliveredAt DateTime? // 자재 입고 보고 (중도금 조건)
   photosJson     String    @default("[]") // 완료 보고 사진 Document id 목록
   plannedEnd  DateTime?
   startedAt   DateTime?

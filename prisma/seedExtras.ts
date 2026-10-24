@@ -5,9 +5,13 @@
  * - 커뮤니티 글은 가상의 이웃 경험담이며, 제도 수치를 새로 만들어 넣지 않는다.
  */
 import type { PrismaClient } from "@prisma/client";
+import { CONTRACT_DEFAULTS } from "../src/config/contract";
+import { splitAmounts } from "../src/lib/payments";
+import { buildChecklist, passRate } from "../src/lib/inspection";
 
 const json = (v: unknown) => JSON.stringify(v);
 const daysAgo = (n: number) => new Date(Date.now() - n * 864e5);
+
 
 export async function seedExtras(db: PrismaClient, contractorId: Record<string, string>) {
   // ── 지원금 DB ──
@@ -263,4 +267,34 @@ export async function seedExtras(db: PrismaClient, contractorId: Record<string, 
   // 라운지 규칙 동의 (시드 업체)
   for (const email of ["contractor@demo.kr", "c02@demo.kr", "c03@demo.kr", "c04@demo.kr", "c06@demo.kr", "c09@demo.kr", "c11@demo.kr"])
     await db.contractorProfile.update({ where: { id: contractorId[email] }, data: { loungeAgreedAt: daysAgo(30) } });
+
+  // 과거 완료 공사: 단계별 지급 기록(모두 승인)과 준공 검측(건물주 승인) — 교차 검증 비교 데이터
+  const done = await db.contract.findMany({
+    where: { status: "SIGNED", project: { status: "COMPLETED" } },
+    include: { project: true, tender: { include: { cluster: true } } },
+    orderBy: { createdAt: "asc" },
+  });
+  for (const [k, c] of done.entries()) {
+    const amounts = splitAmounts(c.amount, CONTRACT_DEFAULTS.stages);
+    const completedAt = c.project!.completedAt ?? daysAgo(120);
+    const releaseAt = new Date(completedAt.getTime() + CONTRACT_DEFAULTS.retentionDays * 864e5);
+    await db.paymentMilestone.createMany({
+      data: CONTRACT_DEFAULTS.stages.map((st, i) => ({
+        contractId: c.id, stage: st.code, seq: i + 1, ratio: st.ratio, amount: amounts[i], condition: st.condition,
+        status: st.code === "RETENTION" && releaseAt > new Date() ? "LOCKED" : "RELEASED",
+        approvedAt: st.code === "RETENTION" && releaseAt > new Date() ? null : completedAt,
+        releaseAt: st.code === "RETENTION" ? releaseAt : null,
+      })),
+    });
+    const trade = c.tender?.cluster.trade ?? "WINDOW";
+    // 하자 이력이 있던 묶음(#3)은 일부 항목 미흡
+    const defect = c.tender?.cluster.code === 3 && k % 2 === 0;
+    const items = buildChecklist(trade, [], CONTRACT_DEFAULTS.checklist).map((x, i) => ({ ...x, ownerCheck: (defect && i === 0 ? "X" : "O") as "O" | "X" }));
+    await db.completionInspection.create({
+      data: {
+        projectId: c.project!.id, checklistJson: json(items), source: "manual", provider: "rule",
+        score: passRate(items), ownerApproved: true, ownerApprovedAt: completedAt,
+      },
+    });
+  }
 }

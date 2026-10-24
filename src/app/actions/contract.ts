@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
+import { createInspection, ensureMilestones, syncMilestones } from "@/lib/contractFlow";
 import { requireRole } from "@/lib/dal";
 import { notify } from "@/lib/notify";
 import { repriceContracts } from "@/lib/bidding/close";
@@ -62,6 +63,7 @@ export async function signContract(_: FormState, formData: FormData): Promise<Fo
   if (formData.get("agree") !== "on") return { message: "계약 내용을 확인하고 동의해주세요." };
   await db.contract.update({ where: { id: c.id }, data: { status: "SIGNED", signedAt: new Date() } });
   await db.project.update({ where: { contractId: c.id }, data: { status: "CONTRACTED" } });
+  await ensureMilestones(c.id);
   await notify([c.contractor.userId], "계약 서명 완료", `${c.building.address} 계약이 체결됐어요. 시공 일정을 확정해주세요.`, "/contractor/projects");
   revalidatePath("/", "layout");
   return { message: "계약이 체결됐어요." };
@@ -72,6 +74,7 @@ export async function requestAS(formData: FormData) {
   const c = await myContract(user.id, String(formData.get("contractId")));
   const note = String(formData.get("note") ?? "").trim().slice(0, 500);
   await db.project.update({ where: { contractId: c.id }, data: { status: "AS", completionNote: note ? `A/S 요청: ${note}` : undefined } });
+  await syncMilestones(c.id);
   await notify([c.contractor.userId], "A/S 요청", `${c.building.address}: ${note || "A/S 요청이 들어왔어요."}`, "/contractor/projects");
   revalidatePath("/", "layout");
 }
@@ -140,8 +143,10 @@ export async function completeProject(_: FormState, formData: FormData): Promise
     where: { id: c.project.id },
     data: { status: "COMPLETED", completedAt: wasAS ? c.project.completedAt : new Date(), completionNote: note || c.project.completionNote, photosJson: JSON.stringify(ids) },
   });
+  if (!wasAS) await createInspection(c.project.id);
+  await syncMilestones(c.id);
   if (c.tenderId) await syncClusterProgress(c.tenderId);
-  await notify([c.building.ownerId], wasAS ? "A/S가 완료됐어요" : "공사가 완료됐어요", wasAS ? c.building.address : "완료 보고를 확인하고 리뷰를 남겨주세요.", `/customer/projects/${c.tender?.clusterId ?? ""}`);
+  await notify([c.building.ownerId], wasAS ? "A/S가 완료됐어요" : "공사가 완료됐어요", wasAS ? c.building.address : "준공 검측을 확인하고 승인해주세요. 리뷰도 남길 수 있어요.", `/customer/projects/${c.tender?.clusterId ?? ""}`);
   revalidatePath("/", "layout");
   return { message: "완료 보고를 올렸어요." };
 }
