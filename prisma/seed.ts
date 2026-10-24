@@ -503,7 +503,7 @@ async function main() {
     await joinAll(boiler.id);
     const t = await createTenderDraft(boiler.id);
     await confirmTender(t.id, t.method);
-    await seedBid(t.id, "c05@demo.kr", 0.9, 20, 24);
+    await seedBid(t.id, "c05@demo.kr", 0.8, 20, 24);
   }
   const ext = findCluster("EXT_INSULATION", "북구");
   if (ext) {

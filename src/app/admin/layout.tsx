@@ -1,6 +1,7 @@
 import { requireRole } from "@/lib/dal";
 import { AppHeader } from "@/components/AppHeader";
 import { logout } from "@/app/actions/auth";
+import { AdminNav } from "@/components/admin/AdminNav";
 
 export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   await requireRole("ADMIN");
@@ -17,6 +18,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
           </form>
         }
       />
+      <AdminNav />
       <main className="mx-auto w-full max-w-4xl flex-1 px-5 py-6">{children}</main>
     </>
   );

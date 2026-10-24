@@ -4,7 +4,7 @@ import { joinCluster, leaveCluster } from "@/app/actions/joint";
 import { MapView } from "@/components/map/MapView";
 import { Badge, Button, Card } from "@/components/ui";
 import { blur } from "@/lib/geo";
-import { TENDER_METHOD_LABEL, TRADE_LABEL, parseJson, type Trade } from "@/lib/constants";
+import { TENDER_METHOD_LABEL, TENDER_STATUS_LABEL, TRADE_LABEL, parseJson, type Trade } from "@/lib/constants";
 
 type Member = ClusterMember & {
   cluster: Cluster & { members: (ClusterMember & { building: Building })[]; tenders: Tender[] };
@@ -91,7 +91,7 @@ export function ClusterCard({ member, meId, minJoined }: { member: Member; meId:
           <p>
             입찰 공고 {tender.round > 1 && `${tender.round}차 `}·{" "}
             <b>{TENDER_METHOD_LABEL[tender.method]}</b> ·{" "}
-            {tender.status === "DRAFT" ? "운영자 확인 중" : tender.status === "OPEN" ? `${tender.deadline.toLocaleDateString("ko-KR")} 마감` : tender.status === "AWARDED" ? "낙찰 완료" : tender.status === "FAILED" ? "유찰 · 재공고 준비" : tender.status}
+            {tender.status === "DRAFT" ? "운영자 확인 중" : tender.status === "OPEN" ? `${tender.deadline.toLocaleDateString("ko-KR")} 마감` : tender.status === "AWARDED" ? "낙찰 완료" : tender.status === "FAILED" ? "유찰 · 재공고 준비" : TENDER_STATUS_LABEL[tender.status]}
           </p>
           {["AWARDED", "EVALUATING"].includes(tender.status) && (
             <Link href={`/customer/projects/${c.id}`} className="mt-1 inline-block font-semibold text-forest-700">견적 비교 보기 ›</Link>

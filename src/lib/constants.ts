@@ -82,6 +82,31 @@ export const TENDER_METHOD_LABEL: Record<string, string> = {
   NEGOTIATED: "수의계약",
 };
 
+export const TENDER_STATUS_LABEL: Record<string, string> = {
+  DRAFT: "확정 대기",
+  OPEN: "공고 중",
+  EVALUATING: "평가 중",
+  AWARDED: "낙찰",
+  FAILED: "유찰",
+  CANCELLED: "취소",
+};
+
+export const CONTRACT_STATUS_LABEL: Record<string, string> = {
+  PENDING: "참여 결정 대기",
+  CONFIRMED: "현장확인 대기",
+  READY: "서명 대기",
+  SIGNED: "계약 완료",
+  CANCELLED: "참여 안 함",
+};
+
+export const PROJECT_STATUS_LABEL: Record<string, string> = {
+  SITE_CHECK: "현장확인",
+  CONTRACTED: "계약 완료 · 착공 대기",
+  IN_PROGRESS: "시공 중",
+  COMPLETED: "완료",
+  AS: "A/S",
+};
+
 export const COMPLAINT_TAGS = [
   { code: "DELAY", label: "일정 지연" },
   { code: "EXTRA_COST", label: "추가비용 요구" },

@@ -312,7 +312,11 @@ model Contract {
   bid          Bid?              @relation(fields: [bidId], references: [id], onDelete: SetNull)
   amount       Int
   isNegotiated Boolean           @default(false) // 수의계약 여부
-  status       String            @default("PENDING") // PENDING | SIGNED | CANCELLED
+  // PENDING(낙찰, 건물주 참여 결정 대기) → CONFIRMED(참여 확정, 현장확인 대기) → READY(실측 완료, 서명 대기) → SIGNED | CANCELLED
+  status       String            @default("PENDING")
+  ownerConsentAt DateTime? // 건물주 참여 확정 (수의계약이면 전환 사유 확인·동의 포함)
+  measuredQty  Float? // 현장확인(실측) 물량
+  ownerQuote   Int? // 건물주가 따로 받은 개별 견적 (비교용)
   signedAt     DateTime?
   createdAt    DateTime          @default(now())
 
@@ -324,6 +328,10 @@ model Project {
   contractId  String    @unique
   contract    Contract  @relation(fields: [contractId], references: [id], onDelete: Cascade)
   status      String    @default("SITE_CHECK") // SITE_CHECK | CONTRACTED | IN_PROGRESS | COMPLETED | AS
+  scheduledStart DateTime? // 업체가 잡은 시공 예정일
+  siteCheckedAt  DateTime?
+  completionNote String?
+  photosJson     String    @default("[]") // 완료 보고 사진 Document id 목록
   plannedEnd  DateTime?
   startedAt   DateTime?
   completedAt DateTime?
