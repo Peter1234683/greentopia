@@ -3,7 +3,7 @@ import { AppHeader } from "@/components/AppHeader";
 import { BottomTabs, type Tab } from "@/components/BottomTabs";
 
 const TABS: Tab[] = [
-  { href: "/customer", label: "홈", icon: "🏠" },
+  { href: "/customer", label: "홈", icon: "🏠", also: ["/customer/learn"] },
   { href: "/customer/diagnosis", label: "내 집 진단", icon: "🔍", also: ["/customer/buildings"] },
   { href: "/customer/joint", label: "공동공사", icon: "🤝" },
   { href: "/customer/projects", label: "내 공사", icon: "📋" },

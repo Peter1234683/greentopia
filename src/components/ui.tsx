@@ -1,7 +1,9 @@
 import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
+import { twMerge } from "tailwind-merge";
 
-const cx = (...c: (string | false | null | undefined)[]) => c.filter(Boolean).join(" ");
+// 뒤에 오는 클래스가 기본 클래스를 덮어쓰도록 병합 (예: Card 의 bg-white → bg-forest-900)
+const cx = (...c: (string | false | null | undefined)[]) => twMerge(c.filter(Boolean).join(" "));
 
 const buttonBase =
   "inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3.5 text-base font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed";

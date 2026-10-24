@@ -38,6 +38,9 @@ prisma/schema.prisma   데이터 모델 (SQLite, PostgreSQL 전환 고려)
 prisma/seed.ts         대구 가상 데이터 (건물 100 · 업체 15 · 과거 공동공사 4건 · 리뷰)
 src/config/            관리자가 바꿀 수 있는 설정 기본값 (지역, 창호면적 비율·예산 구간, 이후 가격 가정치·배점 등)
 src/lib/adapters/      외부 연동 어댑터 (건축물대장: mock | public — BUILDING_REGISTRY_PROVIDER)
+src/lib/diagnosis/     에너지 진단 (engine.ts 순수 계산 · adapters.ts SIMPLE / GRAI_LINK / GRAI_API 자리)
+src/config/diagnosis.ts 간이 진단 가정치 (연식별 기준 소요량, 공종별 절감률, 등급 구간, 외부 링크)
+content/learn/*.md     그린리모델링 알아보기 카드 (비개발자 편집 — content/README.md 참고)
 src/lib/constants.ts   코드값과 한국어 라벨
 src/lib/jwt.ts, session.ts, dal.ts   자체 세션 인증 (JWT 쿠키) + 역할 검사
 src/proxy.ts           비로그인 사용자 보호 구역 차단 (Next 16의 middleware)
@@ -49,7 +52,7 @@ storage/uploads/       업로드 파일 (공개 폴더 아님, /files/[id] 로 �
 
 - [x] 1. 프로젝트 세팅 · DB 스키마 · 시드 · 인증 · 회원 유형 온보딩
 - [x] 2. 건물 등록(건축물대장 mock) + 공사 수요 입력
-- [ ] 3. 에너지 진단 + 교육 콘텐츠
+- [x] 3. 에너지 진단 + 교육 콘텐츠
 - [ ] 4. AI 매칭 엔진 + 절감 시뮬레이션
 - [ ] 5. 사업자 입찰 공고 · 입찰서 위저드
 - [ ] 6. 입찰 방식 추천·전환 + 종합평가

@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
-import { Badge, ButtonLink, Card, ComingSoon } from "@/components/ui";
+import { Badge, Button, ButtonLink, Card } from "@/components/ui";
+import { runSimpleDiagnosis } from "@/app/actions/diagnosis";
+import type { DiagnosisResult } from "@/lib/diagnosis/types";
 import { JOINT_INTENT_LABEL, STRUCTURE_LABEL, SYMPTOMS, TRADE_LABEL, USAGE_LABEL, parseJson, type Trade } from "@/lib/constants";
 import { buildingAge, monthLabel, won } from "@/lib/format";
 import { BUDGET_OPTIONS } from "@/config/building";
@@ -17,6 +19,7 @@ export default async function DiagnosisHub(props: PageProps<"/customer/diagnosis
     include: {
       demands: { where: { status: { in: ["ACTIVE", "MATCHED"] } }, orderBy: { createdAt: "desc" }, take: 1 },
       _count: { select: { documents: { where: { kind: "BILL" } } } },
+      diagnoses: { orderBy: { createdAt: "desc" }, take: 1 },
     },
     orderBy: { createdAt: "asc" },
   });
@@ -47,6 +50,8 @@ export default async function DiagnosisHub(props: PageProps<"/customer/diagnosis
         const trades = dm ? parseJson<Trade[]>(dm.tradesJson, []) : [];
         const symptoms = dm ? parseJson<string[]>(dm.symptomsJson, []) : [];
         const budget = dm ? BUDGET_OPTIONS.find((o) => o.min === dm.budgetMin && o.max === dm.budgetMax) : null;
+        const lastDiag = b.diagnoses[0];
+        const lastResult = lastDiag ? parseJson<DiagnosisResult | null>(lastDiag.resultJson, null) : null;
         return (
           <div key={b.id} className="space-y-3">
             {saved === b.id && (
@@ -121,15 +126,53 @@ export default async function DiagnosisHub(props: PageProps<"/customer/diagnosis
                 </ButtonLink>
               </Card>
             )}
+
+            {lastResult ? (
+              <Link href={`/customer/buildings/${b.id}/diagnosis`} className="block">
+                <Card className="flex items-center gap-4 hover:ring-mint-300">
+                  <div className="flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-2xl bg-forest-900 text-white">
+                    <span className="text-2xl font-extrabold leading-none">{lastResult.grade.grade}</span>
+                    <span className="text-[0.6rem] text-mint-300">간이 등급</span>
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-bold">에너지 진단 결과 · {lastResult.grade.label}</p>
+                    <p className="text-sm text-muted">
+                      {lastDiag.mode === "SIMPLE" ? "간이 추정" : "GR-AI 입력"} · {lastDiag.createdAt.toLocaleDateString("ko-KR")}
+                      {lastResult.combined && ` · 연 최대 ${won(lastResult.combined.won.high)} 절감 예상`}
+                    </p>
+                  </div>
+                  <span className="text-xl text-muted" aria-hidden="true">›</span>
+                </Card>
+              </Link>
+            ) : (
+              <Card>
+                <p className="font-bold">🔍 우리 집 에너지 진단</p>
+                <p className="mt-1 text-sm text-muted">
+                  건물 정보{dm?.billGas != null || dm?.billElectric != null ? "와 입력하신 요금" : ""}으로 바로 간이 진단을 해드려요. 결과는 추정 범위로 보여드려요.
+                </p>
+                <form action={runSimpleDiagnosis} className="mt-3">
+                  <input type="hidden" name="buildingId" value={b.id} />
+                  <Button className="w-full">간이 진단 받기</Button>
+                </form>
+                <Link href={`/customer/buildings/${b.id}/diagnosis/grai`} className="mt-2 block text-center text-sm text-forest-700 underline underline-offset-4">
+                  GR-AI 정밀 시뮬레이션 결과가 있어요
+                </Link>
+              </Card>
+            )}
           </div>
         );
       })}
 
-      <ComingSoon
-        milestone={3}
-        title="에너지 진단이 곧 열려요"
-        items={["간이 에너지 등급과 같은 연식 평균 비교", "공종별 개선 시 예상 절감량", "GR-AI 정밀 시뮬레이션 연결"]}
-      />
+      <Link href="/customer/learn" className="block">
+        <Card className="flex items-center gap-4 bg-mint-50 ring-mint-100">
+          <span className="text-3xl" aria-hidden="true">📚</span>
+          <div className="flex-1">
+            <p className="font-bold">그린리모델링 알아보기</p>
+            <p className="text-sm text-muted">창호·단열·보일러, 지원 제도까지 쉽게 정리했어요.</p>
+          </div>
+          <span className="text-xl text-muted" aria-hidden="true">›</span>
+        </Card>
+      </Link>
     </div>
   );
 }

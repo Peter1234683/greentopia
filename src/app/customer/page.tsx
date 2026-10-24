@@ -3,6 +3,7 @@ import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { Badge, ButtonLink, Card, SectionTitle } from "@/components/ui";
 import { TRADE_LABEL, USAGE_LABEL, parseJson, type Trade } from "@/lib/constants";
+import { loadLearnCards } from "@/lib/content";
 
 export default async function CustomerHome(props: PageProps<"/customer">) {
   const user = await requireRole("CUSTOMER");
@@ -18,6 +19,8 @@ export default async function CustomerHome(props: PageProps<"/customer">) {
         where: { status: "ACTIVE", jointIntent: { in: ["YES", "MAYBE"] }, building: { sigungu: main.sigungu, id: { not: main.id } } },
       })
     : 0;
+
+  const cards = await loadLearnCards();
 
   return (
     <div className="space-y-6">
@@ -95,21 +98,22 @@ export default async function CustomerHome(props: PageProps<"/customer">) {
       )}
 
       <section>
-        <SectionTitle>그린리모델링, 이런 거예요</SectionTitle>
+        <SectionTitle action={<Link href="/customer/learn" className="text-sm font-semibold text-forest-700">전체 보기 ›</Link>}>
+          그린리모델링 알아보기
+        </SectionTitle>
         <div className="-mx-5 flex snap-x gap-3 overflow-x-auto px-5 pb-2">
-          {[
-            ["🪟", "창호만 바꿔도", "겨울 외풍과 결로가 확 줄어요"],
-            ["🧱", "단열을 보강하면", "여름엔 시원하고 겨울엔 따뜻해요"],
-            ["🔥", "보일러를 바꾸면", "같은 난방에 가스가 덜 들어요"],
-          ].map(([icon, t, d]) => (
-            <div key={t} className="w-44 shrink-0 snap-start rounded-3xl bg-white p-4 ring-1 ring-line/60">
-              <div className="text-3xl" aria-hidden="true">{icon}</div>
-              <p className="mt-2 font-bold">{t}</p>
-              <p className="mt-1 text-sm text-muted">{d}</p>
-            </div>
+          {cards.map((c) => (
+            <Link
+              key={c.slug}
+              href={`/customer/learn?topic=${c.slug}`}
+              className="w-40 shrink-0 snap-start rounded-3xl bg-white p-4 ring-1 ring-line/60 hover:ring-mint-300"
+            >
+              <div className="text-3xl" aria-hidden="true">{c.emoji}</div>
+              <p className="mt-2 font-bold">{c.title}</p>
+              <p className="mt-1 text-sm text-muted">{c.summary}</p>
+            </Link>
           ))}
         </div>
-        <p className="mt-1 text-xs text-muted">자세한 안내는 마일스톤 3에서 &lsquo;그린리모델링 알아보기&rsquo;로 제공돼요.</p>
       </section>
     </div>
   );
