@@ -2,20 +2,18 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
-import { getSettings } from "@/lib/settings";
-import { checkSupports } from "@/lib/support";
+import { matchAllForBuilding } from "@/lib/subsidy/service";
 import { stageIndex } from "@/lib/stages";
 import { Timeline } from "@/components/Timeline";
 import { Badge, ButtonLink, Card } from "@/components/ui";
-import { CONTRACT_STATUS_LABEL, PROJECT_STAGES, TRADE_LABEL, parseJson, type Trade } from "@/lib/constants";
+import { CONTRACT_STATUS_LABEL, PROJECT_STAGES, TRADE_LABEL, type Trade } from "@/lib/constants";
 import { won } from "@/lib/format";
 
 export const metadata: Metadata = { title: "내 공사" };
 
 export default async function MyProjects() {
   const user = await requireRole("CUSTOMER");
-  const [settings, buildings] = await Promise.all([
-    getSettings(),
+  const [buildings] = await Promise.all([
     db.building.findMany({
       where: { ownerId: user.id },
       include: {
@@ -28,6 +26,7 @@ export default async function MyProjects() {
       },
     }),
   ]);
+  const subsidies = (await Promise.all(buildings.map((b) => matchAllForBuilding(user.id, b.id)))).filter((x) => x !== null);
   const items = buildings.flatMap((b) =>
     b.clusterMembers.map((m) => {
       const tender = m.cluster.tenders[0] ?? null;
@@ -72,25 +71,29 @@ export default async function MyProjects() {
 
       <section className="space-y-3">
         <h2 className="text-lg font-bold">🎁 지원사업 안내</h2>
-        {buildings.map((b) => {
-          const trades = parseJson<string[]>(b.demands[0]?.tradesJson, []);
-          return checkSupports(b, trades, settings.support).map((s) => (
-            <Card key={`${b.id}-${s.name}`} className="p-4">
-              <div className="flex items-center justify-between">
-                <p className="font-bold">{s.name}</p>
-                <Badge tone={s.eligible ? "mint" : "gray"}>{s.eligible ? "해당 가능성 높음" : "요건 확인 필요"}</Badge>
+        {subsidies.map((m) =>
+          m.results.map(({ program: p, match }) => (
+            <Card key={`${m.building.id}-${p.id}`} className="p-4">
+              <div className="flex items-center justify-between gap-2">
+                <p className="font-bold">{p.name}</p>
+                <Badge tone={match.status === "ELIGIBLE" ? "mint" : match.status === "CHECK" ? "warn" : "gray"}>
+                  {match.status === "ELIGIBLE" ? "해당 가능" : match.status === "CHECK" ? "조건 확인 필요" : "해당 없음"}
+                </Badge>
               </div>
-              <p className="text-xs text-muted">{b.nickname ?? b.address}</p>
+              <p className="text-xs text-muted">{m.building.nickname ?? m.building.address}{p.badge ? ` · ${p.badge.label}` : ""}</p>
               <ul className="mt-2 space-y-1 text-sm">
-                {s.checks.map((c) => (
-                  <li key={c.label} className="flex gap-2"><span className={c.ok ? "text-forest-700" : "text-danger"} aria-hidden="true">{c.ok ? "✔" : "✕"}</span>{c.label}</li>
+                {match.reasons.map((r) => (
+                  <li key={r.label} className="flex gap-2">
+                    <span className={r.state === "ok" ? "text-forest-700" : r.state === "no" ? "text-danger" : "text-warn"} aria-hidden="true">{r.state === "ok" ? "✔" : r.state === "no" ? "✕" : "?"}</span>
+                    {r.label}
+                  </li>
                 ))}
               </ul>
-              <a href={s.infoUrl} target="_blank" rel="noopener noreferrer" className="mt-2 inline-block text-sm text-forest-700 underline">공고 확인하기 ↗</a>
+              <Link href={`/customer/subsidy?b=${m.building.id}`} className="mt-2 inline-block text-sm text-forest-700 underline">자세히 · 계산기 · 상담</Link>
             </Card>
-          ));
-        })}
-        <p className="text-xs text-muted">※ 규칙 기반 요건 대조 결과예요. 실제 지원 여부는 해당 기관 심사로 결정돼요.</p>
+          )),
+        )}
+        <p className="text-xs text-muted">※ 지원금 DB 기준 규칙 대조 결과예요. 실제 적용 여부는 공고문과 관할 기관 확인이 필요합니다.</p>
       </section>
     </div>
   );

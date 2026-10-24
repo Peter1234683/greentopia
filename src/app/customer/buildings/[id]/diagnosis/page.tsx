@@ -159,6 +159,10 @@ export default async function DiagnosisResultPage(props: PageProps<"/customer/bu
         </Card>
       )}
 
+      <ButtonLink href={`/customer/subsidy?b=${b.id}`} variant="mint" className="w-full">
+        💰 이 진단으로 숨은 지원금 확인하기
+      </ButtonLink>
+
       <Card>
         <p className="font-bold">더 정확하게 알고 싶다면</p>
         <p className="mt-1 text-sm text-muted">

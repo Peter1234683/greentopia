@@ -5,7 +5,6 @@ import { MapView } from "@/components/map/MapView";
 import { Basis, Card } from "@/components/ui";
 import { interestExample, jointEstimate, soloEstimate, type ActualUnitRange, type QuantityBuilding } from "@/lib/pricing";
 import type { PricingSettings } from "@/config/pricing";
-import type { SupportSettings } from "@/config/support";
 import { TRADE_LABEL, USAGE_LABEL, type Trade } from "@/lib/constants";
 import { won } from "@/lib/format";
 
@@ -18,7 +17,16 @@ type Props = {
   pricing: PricingSettings;
   actual: Record<string, ActualUnitRange>;
   maxClusterSize: number;
-  support: SupportSettings["interestSupport"] & { eligible: boolean };
+  support: {
+    name: string;
+    exampleLoanRatePct: number;
+    exampleSupportRatePct: number;
+    exampleTermYears: number;
+    exampleLoanShare: number;
+    loanLimit: number | null;
+    eligible: boolean;
+    needsNotice: boolean;
+  } | null;
 };
 
 function Toggle({ on, onClick, label, sub }: { on: boolean; onClick: () => void; label: string; sub: string }) {
@@ -64,7 +72,8 @@ export function JointSimulator({ me, myTrades, neighbors, pricing, actual, maxCl
   const jointMid = (sum("joint", "low") + sum("joint", "high")) / 2;
   const saveLow = Math.max(0, sum("solo", "low") - sum("joint", "high"));
   const saveHigh = Math.max(0, sum("solo", "high") - sum("joint", "low"));
-  const interest = interestExample(jointMid * support.exampleLoanShare, support.exampleLoanRatePct, support.exampleSupportRatePct, support.exampleTermYears);
+  const principal = support ? Math.min(jointMid * support.exampleLoanShare, support.loanLimit ?? Infinity) : 0;
+  const interest = support ? interestExample(principal, support.exampleLoanRatePct, support.exampleSupportRatePct, support.exampleTermYears) : null;
   const anyActual = rows.some((r) => r.joint.basis === "ACTUAL");
 
   return (
@@ -138,22 +147,26 @@ export function JointSimulator({ me, myTrades, neighbors, pricing, actual, maxCl
 
       <Card>
         <p className="font-bold">💳 지원제도를 쓰면 (예시)</p>
-        {support.eligible ? (
+        {!support || !interest ? (
+          <p className="mt-2 text-sm text-muted">공개된 이자지원 사업이 아직 없어요.</p>
+        ) : support.eligible ? (
           <>
             <p className="mt-2 text-sm">
-              같이 발주 예상가(약 {won(jointMid)})를 대출로 진행하면, {support.exampleTermYears}년간 이자 약 {won(interest.interest)} 중{" "}
+              같이 발주 예상가(약 {won(jointMid)}) 중 약 {won(principal)}을 대출로 진행하면, {support.exampleTermYears}년간 이자 약 {won(interest.interest)} 중{" "}
               <b className="text-forest-700">약 {won(interest.supported)}</b>을 {support.name}으로 지원받을 수 있어요.
             </p>
-            <p className="mt-2 text-sm">
-              최종 자기부담 예시: 공사비 약 {won(jointMid)} + 이자 약 {won(interest.net)}
-            </p>
+            <p className="mt-2 text-sm">최종 자기부담 예시: 공사비 약 {won(jointMid)} + 이자 약 {won(interest.net)}</p>
           </>
         ) : (
-          <p className="mt-2 text-sm text-muted">우리 집은 예시 요건(사용승인일 {support.approvalBefore} 이전 등)에 해당하지 않아요. 내 공사 화면에서 자세히 확인할 수 있어요.</p>
+          <p className="mt-2 text-sm text-muted">우리 집은 {support.name} 요건 중 확인이 필요한 항목이 있어요.</p>
         )}
-        <Basis>
-          대출 금리 {support.exampleLoanRatePct}%, 지원 {support.exampleSupportRatePct}%p, {support.exampleTermYears}년 원금균등 상환을 가정한 예시예요. 실제 지원 비율·한도는 공고를 확인하세요.
-        </Basis>
+        <a href="/customer/subsidy" className="mt-2 inline-block text-sm font-semibold text-forest-700">숨은 지원금 자세히 보기 ›</a>
+        {support && (
+          <Basis>
+            대출 금리 {support.exampleLoanRatePct}%(가정), 이자 지원 {support.exampleSupportRatePct}%p(지원금 DB), {support.exampleTermYears}년 원금균등 상환 예시예요.
+            {support.needsNotice && " 지원 수치는 공고문 확인이 필요한 정보예요."}
+          </Basis>
+        )}
       </Card>
     </div>
   );

@@ -18,6 +18,12 @@ export default async function MyPage() {
           보유 포인트 <span className="font-bold text-forest-700">{(user.customerProfile?.points ?? 0).toLocaleString()}P</span>
         </p>
       </Card>
+      <a href="/customer/subsidy" className="block">
+        <Card className="flex items-center justify-between">
+          <span className="font-semibold">💰 숨은 지원금 · 우대 대상 설정</span>
+          <span aria-hidden="true" className="text-muted">›</span>
+        </Card>
+      </a>
       <AccountActions />
     </div>
   );

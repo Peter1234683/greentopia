@@ -4,7 +4,7 @@ import { MATCHING_DEFAULTS } from "@/config/matching";
 import { PRICING_DEFAULTS } from "@/config/pricing";
 import { BIDDING_DEFAULTS } from "@/config/bidding";
 import { REPUTATION_DEFAULTS } from "@/config/reputation";
-import { SUPPORT_DEFAULTS } from "@/config/support";
+import { SUBSIDY_DEFAULTS } from "@/config/support";
 
 // 코드 기본값(src/config) 위에 관리자가 저장한 Config 행(섹션별 JSON)을 덮어쓴다.
 export const SETTINGS_DEFAULTS = {
@@ -12,7 +12,7 @@ export const SETTINGS_DEFAULTS = {
   pricing: PRICING_DEFAULTS,
   bidding: BIDDING_DEFAULTS,
   reputation: REPUTATION_DEFAULTS,
-  support: SUPPORT_DEFAULTS,
+  support: SUBSIDY_DEFAULTS,
 };
 export type Settings = typeof SETTINGS_DEFAULTS;
 export type SettingsSection = keyof Settings;

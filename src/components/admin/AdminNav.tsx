@@ -8,6 +8,7 @@ const ITEMS = [
   { href: "/admin/contractors", label: "업체 심사" },
   { href: "/admin/clusters", label: "Cluster" },
   { href: "/admin/tenders", label: "입찰" },
+  { href: "/admin/subsidies", label: "지원금" },
   { href: "/admin/reviews", label: "리뷰·PQ" },
   { href: "/admin/monitoring", label: "담합 감시" },
   { href: "/admin/settings", label: "설정" },

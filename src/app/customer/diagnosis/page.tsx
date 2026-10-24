@@ -56,7 +56,8 @@ export default async function DiagnosisHub(props: PageProps<"/customer/diagnosis
           <div key={b.id} className="space-y-3">
             {saved === b.id && (
               <p role="status" className="rounded-2xl bg-forest-800 px-4 py-3 text-sm text-white">
-                ✅ 공사 수요가 저장됐어요. 비슷한 이웃이 모이면 공동공사를 제안해 드릴게요.
+                ✅ 공사 수요가 저장됐어요. 비슷한 이웃이 모이면 공동공사를 제안해 드릴게요.{" "}
+                <Link href={`/customer/subsidy?b=${b.id}`} className="font-semibold text-mint-300 underline">받을 수 있는 지원금 보기</Link>
               </p>
             )}
             <Card>

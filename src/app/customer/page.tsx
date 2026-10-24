@@ -5,6 +5,7 @@ import { Badge, ButtonLink, Card, SectionTitle } from "@/components/ui";
 import { TRADE_LABEL, USAGE_LABEL, parseJson, type Trade } from "@/lib/constants";
 import { loadLearnCards } from "@/lib/content";
 import { ensureFollowupReminders } from "@/lib/reviews";
+import { matchAllForBuilding } from "@/lib/subsidy/service";
 
 export default async function CustomerHome(props: PageProps<"/customer">) {
   const user = await requireRole("CUSTOMER");
@@ -23,6 +24,8 @@ export default async function CustomerHome(props: PageProps<"/customer">) {
 
   const cards = await loadLearnCards();
   await ensureFollowupReminders(user.id);
+  const subsidy = main ? await matchAllForBuilding(user.id, main.id) : null;
+  const subsidyCount = subsidy?.results.filter((r) => r.match.status !== "INELIGIBLE").length ?? 0;
   const todos = await db.contract.findMany({
     where: {
       building: { ownerId: user.id },
@@ -113,6 +116,19 @@ export default async function CustomerHome(props: PageProps<"/customer">) {
           </ButtonLink>
         </Card>
       )}
+
+      <Link href="/customer/subsidy" className="block">
+        <Card className="flex items-center gap-4 ring-2 ring-mint-400">
+          <span className="text-4xl" aria-hidden="true">💰</span>
+          <div className="flex-1">
+            <p className="font-bold">숨은 지원금 확인하기</p>
+            <p className="text-sm text-muted">
+              {main ? (subsidyCount ? `우리 집이 검토해 볼 지원사업 ${subsidyCount}건` : "출처가 확인된 지원사업을 찾아드려요") : "건물을 등록하면 받을 수 있는 지원금을 찾아드려요"}
+            </p>
+          </div>
+          <span className="text-xl text-muted" aria-hidden="true">›</span>
+        </Card>
+      </Link>
 
       {main && (
         <Card className="flex items-center gap-4 bg-mint-50 ring-mint-100">

@@ -4,7 +4,7 @@ import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
 import { actualUnitRanges } from "@/lib/actualPrices";
-import { checkSupports } from "@/lib/support";
+import { matchAllForBuilding } from "@/lib/subsidy/service";
 import { blur } from "@/lib/geo";
 import { parseJson, type Trade } from "@/lib/constants";
 import { ButtonLink, Card } from "@/components/ui";
@@ -64,7 +64,9 @@ export default async function JointPage(props: PageProps<"/customer/joint">) {
       orderBy: { cluster: { createdAt: "desc" } },
     }),
   ]);
-  const support = checkSupports(me, myTrades, settings.support)[0];
+  // 이자지원 예시는 지원금 DB 의 실제 등록 값(이자 지원율·상환 기간)을 쓴다
+  const subsidy = await matchAllForBuilding(user.id, me.id);
+  const loanProgram = subsidy?.results.find((r) => r.match.rate != null);
 
   return (
     <div className="space-y-5 pt-2">
@@ -111,7 +113,20 @@ export default async function JointPage(props: PageProps<"/customer/joint">) {
           pricing={settings.pricing}
           actual={actual}
           maxClusterSize={settings.matching.maxClusterSize}
-          support={{ ...settings.support.interestSupport, eligible: support.eligible }}
+          support={
+            loanProgram
+              ? {
+                  name: loanProgram.program.name,
+                  exampleLoanRatePct: settings.support.calculator.loanRatePct,
+                  exampleSupportRatePct: loanProgram.match.rate!,
+                  exampleTermYears: loanProgram.match.maxRepayYears ?? settings.support.calculator.termYears,
+                  exampleLoanShare: 1,
+                  loanLimit: loanProgram.match.loanLimit,
+                  eligible: loanProgram.match.status !== "INELIGIBLE",
+                  needsNotice: !loanProgram.program.verifiedAt,
+                }
+              : null
+          }
         />
       </section>
     </div>
