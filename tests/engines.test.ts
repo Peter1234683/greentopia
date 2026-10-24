@@ -135,3 +135,64 @@ test("타임라인 단계와 주소 해석", () => {
   assert.deepEqual(parseDaeguAddress("수성 만촌동 12"), { sido: "대구광역시", sigungu: "수성구", dong: "만촌동", lot: "12" });
   assert.ok("error" in parseDaeguAddress("서울 강남구 역삼동 1"));
 });
+
+// ── P5: 매칭 설명 ──
+import { blockReason, costBreakdown, explainCandidate, sizeCurve, sumParts } from "../src/lib/matching/engine";
+import { demandGrid } from "../src/lib/matching/demandMap";
+
+test("Hard Filter 추가: 창호는 조적조와 철근콘크리트를 따로, 보일러는 세대 면적 규격 차이로 분리", () => {
+  const a = { ...node("a", 35.85, 128.58), structure: "BRICK" };
+  const b = { ...node("b", 35.851, 128.581), structure: "RC" };
+  assert.equal(blockReason(a, b, "WINDOW", MATCHING_DEFAULTS), "STRUCTURE");
+  assert.equal(blockReason(a, { ...b, structure: "MASONRY" }, "WINDOW", MATCHING_DEFAULTS), null);
+  const small = { ...node("s", 35.85, 128.58, 3, ["BOILER"]), grossArea: 240, households: 4 }; // 60㎡
+  const big = { ...node("g", 35.851, 128.58, 3, ["BOILER"]), grossArea: 600, households: 4 }; // 150㎡
+  assert.equal(blockReason(small, big, "BOILER", MATCHING_DEFAULTS), "SPEC");
+});
+
+test("제외 사유·대기 풀: 구조 다름은 제외, 시기 조금 다름은 대기", () => {
+  const members = [0, 1, 2, 3].map((i) => node(`m${i}`, 35.85 + i * 0.001, 128.58));
+  const rc = { ...node("x", 35.851, 128.581), structure: "RC" };
+  const membersBrick = members.map((m) => ({ ...m, structure: "BRICK" }));
+  assert.equal(explainCandidate(rc, membersBrick, "WINDOW", MATCHING_DEFAULTS, false).status, "EXCLUDED");
+  const late = node("l", 35.851, 128.581, 6); // 3개월 차이 (기준 ±2)
+  const r = explainCandidate(late, members, "WINDOW", MATCHING_DEFAULTS, false);
+  assert.equal(r.status, "WAITLIST");
+  assert.match(r.reason, /시기/);
+});
+
+test("비용 구성: 함께하면 1동당 총액이 줄고, 곡선의 추천 구간은 최소 동수 이상", () => {
+  const { solo, joint } = costBreakdown(10_000_000, 6, 0.1, MATCHING_DEFAULTS);
+  assert.ok(sumParts(joint) < sumParts(solo));
+  assert.ok(joint.fixed < solo.fixed && joint.material < solo.material);
+  const c = sizeCurve(10_000_000, (n) => (n >= 5 ? 0.1 : n >= 3 ? 0.06 : 0), MATCHING_DEFAULTS);
+  assert.equal(c.points.length, MATCHING_DEFAULTS.maxClusterSize);
+  assert.ok(c.recommended.from >= MATCHING_DEFAULTS.minClusterSize && c.recommended.to >= c.recommended.from);
+});
+
+test("수요 지도: 격자 중심 좌표만, 적은 칸은 숨김, 공종 필터", () => {
+  const pts = [
+    { lat: 35.8501, lng: 128.5801, trades: ["WINDOW"] },
+    { lat: 35.8502, lng: 128.5803, trades: ["WINDOW", "BOILER"] },
+    { lat: 35.9, lng: 128.6, trades: ["WINDOW"] },
+  ];
+  const cells = demandGrid(pts, 0.004, 2);
+  assert.equal(cells.length, 1);
+  assert.equal(cells[0].count, 2);
+  assert.notEqual(cells[0].lat, 35.8501);
+  assert.equal(demandGrid(pts, 0.004, 2, "BOILER").length, 0);
+});
+
+import { tierProgress } from "../src/lib/matching/progress";
+test("진행바: 입찰 구간이 있으면 그 경계, 없으면 가정 구간(예상)", () => {
+  const cfg = [{ min: 1, max: 2, low: 0, high: 0 }, { min: 3, max: 4, low: 0.04, high: 0.08 }, { min: 5, max: 8, low: 0.08, high: 0.13 }];
+  const a = tierProgress(4, null, cfg);
+  assert.equal(a.source, "assumed");
+  assert.equal(a.need, 1);
+  assert.deepEqual(a.nextDiscount, { low: 0.08, high: 0.13 });
+  const b = tierProgress(5, [[{ minBuildings: 4, maxBuildings: 5 }, { minBuildings: 6, maxBuildings: 9 }]], cfg);
+  assert.equal(b.source, "bids");
+  assert.equal(b.next, 6);
+  assert.equal(b.nextDiscount, null);
+  assert.equal(tierProgress(9, null, cfg).next, null);
+});

@@ -7,6 +7,7 @@ const ITEMS = [
   { href: "/admin", label: "대시보드" },
   { href: "/admin/contractors", label: "업체 심사" },
   { href: "/admin/clusters", label: "Cluster" },
+  { href: "/admin/matching", label: "매칭 시뮬" },
   { href: "/admin/tenders", label: "입찰" },
   { href: "/admin/subsidies", label: "지원금" },
   { href: "/admin/reviews", label: "리뷰·PQ" },

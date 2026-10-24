@@ -5,6 +5,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { hashPassword, verifyPassword } from "@/lib/password";
 import { createSession, deleteSession } from "@/lib/session";
+import { acceptInvite } from "@/lib/invite";
 import { ROLE_HOME, TRADES, type Role } from "@/lib/constants";
 import { SIDO, DAEGU_SIGUNGU } from "@/config/regions";
 import { saveUpload, validateUpload } from "@/lib/uploads";
@@ -46,6 +47,8 @@ export async function signupCustomer(_: FormState, formData: FormData): Promise<
       customerProfile: { create: {} },
     },
   });
+  const invite = String(formData.get("invite") ?? "");
+  if (invite) await acceptInvite(invite, user.id);
   await createSession({ userId: user.id, role: "CUSTOMER" });
   // 주소를 입력했다면 건물 등록 화면(마일스톤 2)에서 이어서 쓸 수 있게 넘긴다.
   redirect(d.address ? `/customer?address=${encodeURIComponent(d.address)}` : "/customer");

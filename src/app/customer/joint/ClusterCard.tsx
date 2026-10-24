@@ -4,10 +4,11 @@ import { joinCluster, leaveCluster } from "@/app/actions/joint";
 import { MapView } from "@/components/map/MapView";
 import { Badge, Button, Card } from "@/components/ui";
 import { blur } from "@/lib/geo";
+import { tierProgress, type BidTier, type Tier } from "@/lib/matching/progress";
 import { TENDER_METHOD_LABEL, TENDER_STATUS_LABEL, TRADE_LABEL, parseJson, type Trade } from "@/lib/constants";
 
 type Member = ClusterMember & {
-  cluster: Cluster & { members: (ClusterMember & { building: Building })[]; tenders: Tender[] };
+  cluster: Cluster & { members: (ClusterMember & { building: Building })[]; tenders: (Tender & { bids: { tierPricesJson: string }[] })[] };
 };
 
 const TITLE: Record<string, string> = {
@@ -28,7 +29,7 @@ const STATUS: Record<string, { label: string; tone: "mint" | "gray" | "warn" | "
   COMPLETED: { label: "완료", tone: "gray" },
 };
 
-export function ClusterCard({ member, meId, minJoined }: { member: Member; meId: string; minJoined: number }) {
+export function ClusterCard({ member, meId, minJoined, tiers }: { member: Member; meId: string; minJoined: number; tiers: Tier[] }) {
   const c = member.cluster;
   const active = c.members.filter((m) => m.status !== "LEFT");
   const joined = active.filter((m) => m.status === "JOINED").length;
@@ -36,6 +37,8 @@ export function ClusterCard({ member, meId, minJoined }: { member: Member; meId:
   const tender = c.tenders[0];
   const st = STATUS[c.status] ?? { label: c.status, tone: "gray" as const };
   const canChange = ["PROPOSED", "RECRUITING", "CONFIRMED", "TENDERING"].includes(c.status);
+  const bidTiers = tender?.bids.map((b) => parseJson<BidTier[]>(b.tierPricesJson, [])) ?? [];
+  const tp = tierProgress(joined, bidTiers.length ? bidTiers : null, tiers);
 
   return (
     <Card>
@@ -84,6 +87,11 @@ export function ClusterCard({ member, meId, minJoined }: { member: Member; meId:
         <p className="mt-1 text-xs text-muted">
           {joined >= minJoined ? "입찰을 열 수 있는 인원이 모였어요." : `${minJoined}동 이상 참여하면 입찰 공고가 열려요. (${Math.max(0, minJoined - joined)}동 더 필요)`}
         </p>
+        {canChange && tp.next != null && (
+          <p className="mt-0.5 text-xs text-forest-700">
+            {tp.need}동 더 모이면 다음 물량 구간{tp.source === "assumed" ? " (예상)" : " (업체 입찰 구간)"}
+          </p>
+        )}
       </div>
 
       {tender && (
@@ -98,6 +106,11 @@ export function ClusterCard({ member, meId, minJoined }: { member: Member; meId:
           )}
         </div>
       )}
+
+      <div className="mt-3 flex gap-2 text-sm">
+        <Link href={`/customer/joint/why/${c.id}`} className="flex-1 rounded-xl py-2 text-center font-semibold text-forest-700 ring-1 ring-line">🤖 왜 이렇게 묶였나요?</Link>
+        {canChange && <Link href={`/customer/invite?c=${c.id}`} className="flex-1 rounded-xl py-2 text-center font-semibold text-forest-700 ring-1 ring-line">🙌 이웃 초대</Link>}
+      </div>
 
       {canChange && (
         <div className="mt-4">

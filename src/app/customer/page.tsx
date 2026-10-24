@@ -6,6 +6,10 @@ import { TRADE_LABEL, USAGE_LABEL, parseJson, type Trade } from "@/lib/constants
 import { loadLearnCards } from "@/lib/content";
 import { ensureFollowupReminders } from "@/lib/reviews";
 import { matchAllForBuilding } from "@/lib/subsidy/service";
+import { loadDemandCells } from "@/lib/matching/demandMapData";
+import { MapView } from "@/components/map/MapView";
+
+const daysAgo = (n: number) => new Date(Date.now() - n * 864e5);
 
 export default async function CustomerHome(props: PageProps<"/customer">) {
   const user = await requireRole("CUSTOMER");
@@ -33,6 +37,16 @@ export default async function CustomerHome(props: PageProps<"/customer">) {
     },
     include: { tender: { include: { cluster: true } }, contractor: true },
   });
+
+  const [map, popular] = await Promise.all([
+    main ? loadDemandCells(undefined, main.sigungu) : null,
+    db.communityPost.findMany({
+      where: { boardType: "OWNER", status: "PUBLISHED", isNotice: false, createdAt: { gte: daysAgo(60) } },
+      select: { id: true, title: true, dong: true, sigungu: true, _count: { select: { reactions: { where: { kind: "LIKE" } } } } },
+      orderBy: { reactions: { _count: "desc" } },
+      take: 3,
+    }),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -130,15 +144,43 @@ export default async function CustomerHome(props: PageProps<"/customer">) {
         </Card>
       </Link>
 
-      {main && (
-        <Card className="flex items-center gap-4 bg-mint-50 ring-mint-100">
-          <span className="text-4xl" aria-hidden="true">🤝</span>
-          <div className="flex-1">
-            <p className="text-sm text-forest-800">{main.sigungu}에서 공동공사를 원하는 이웃</p>
-            <p className="text-3xl font-extrabold text-forest-900">{neighborDemand}동</p>
+      {main && map && (
+        <Card className="space-y-3 bg-mint-50 ring-mint-100">
+          <div className="flex items-center gap-4">
+            <span className="text-4xl" aria-hidden="true">🤝</span>
+            <div className="flex-1">
+              <p className="text-sm text-forest-800">{main.sigungu}에서 공동공사를 원하는 이웃</p>
+              <p className="text-3xl font-extrabold text-forest-900">{neighborDemand}동</p>
+            </div>
+            <Link href="/customer/joint/map" className="text-sm font-semibold text-forest-700">수요 지도 ›</Link>
           </div>
-          <Link href="/customer/joint" className="text-sm font-semibold text-forest-700">자세히 ›</Link>
+          <MapView
+            center={[main.lat, main.lng]}
+            zoom={13}
+            fit={false}
+            height={150}
+            bubbles={map.cells.map((c) => ({ lat: c.lat, lng: c.lng, radiusM: map.radiusM, intensity: c.count / map.max }))}
+            markers={[{ id: "me", lat: main.lat, lng: main.lng, tone: "me" }]}
+          />
         </Card>
+      )}
+
+      {popular.length > 0 && (
+        <section>
+          <SectionTitle action={<Link href="/customer/community?sort=popular" className="text-sm font-semibold text-forest-700">더 보기 ›</Link>}>
+            이웃 커뮤니티 인기글
+          </SectionTitle>
+          <ul className="space-y-2">
+            {popular.map((p) => (
+              <li key={p.id}>
+                <Link href={`/customer/community/${p.id}`} className="flex items-center gap-3 rounded-2xl bg-white px-4 py-3 ring-1 ring-line/60 hover:ring-mint-300">
+                  <span className="min-w-0 flex-1 truncate font-semibold">{p.title}</span>
+                  <span className="shrink-0 text-xs text-muted">👍 {p._count.reactions} · {p.dong ?? p.sigungu ?? ""}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
 
       <section>

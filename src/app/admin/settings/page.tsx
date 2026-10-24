@@ -7,10 +7,11 @@ import { aiStatus } from "@/lib/ai";
 export const metadata: Metadata = { title: "설정" };
 
 const META: Record<string, [string, string]> = {
-  matching: ["AI 매칭", "Hard Filter 반경·시기, 적합도 가중치(합 100), Cluster 최소·최대 동수, 공고 생성 기준"],
+  matching: ["AI 매칭", "Hard Filter 반경·시기·구조·자재 규격, 적합도 가중치(합 100), Cluster 최소·최대 동수, 공고 생성 기준, 대기 풀, 비용 구성 분해, 수요 지도 격자"],
   pricing: ["가격 가정치", "공종별 개별 발주 단가, 유형·규격 보정, 공동발주 할인 가정치, 실제 낙찰가 전환 표본 수"],
   bidding: ["입찰 제도", "공고 기간, 유찰 기준, 입찰 방식 추천 규칙, 종합평가 배점, 덤핑 기준, 수의계약 경고선, 담합 감시 기준"],
   reputation: ["평판 · 등급", "별점 가중치, 최근 가중, 불만 태그 감점, 새싹 트랙, 등급 기준, PQ 후보 기준, 리뷰 포인트"],
+  growth: ["이웃 초대", "초대 보상 포인트, 1인 보상 상한"],
   support: ["지원금 화면", "정보 확인 배지 기준일, 계산기 대출금리·기간 가정치 (요건·금리·한도는 지원금 DB 에서 관리)"],
 };
 

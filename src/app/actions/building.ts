@@ -12,6 +12,7 @@ import { BUDGET_OPTIONS, DESIRED_START_MONTHS, WINDOW_AREA_RATIO } from "@/confi
 import { SYMPTOMS, TRADES } from "@/lib/constants";
 import { saveUpload, validateUpload } from "@/lib/uploads";
 import { runMatching } from "@/lib/matching/run";
+import { onDemandSaved } from "@/lib/invite";
 
 async function ownedBuilding(userId: string, id: string) {
   const b = await db.building.findFirst({ where: { id, ownerId: userId } });
@@ -157,6 +158,7 @@ export async function saveDemand(_: FormState, formData: FormData): Promise<Form
 
   // 새 수요가 들어오면 AI 매칭을 다시 돌린다 (진행 중 Cluster 는 유지)
   await runMatching();
+  await onDemandSaved(user.id, building.id);
   revalidatePath("/customer", "layout");
   redirect(`/customer/diagnosis?saved=${building.id}`);
 }

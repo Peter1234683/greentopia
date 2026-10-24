@@ -234,8 +234,8 @@ export async function seedExtras(db: PrismaClient, contractorId: Record<string, 
     {
       email: "c11@demo.kr", category: "MATERIAL", days: 0,
       title: "이번 서구 창호 건 다들 얼마 넣으세요?",
-      body: "Cluster #6 창호 건 ㎡당 40만원대에 넣자는 얘기가 있던데 맞나요?",
-      held: "진행 중 입찰 번호·가격으로 보이는 표현이 감지됐어요 (Cluster #6, ㎡당 40만원대)",
+      body: "Cluster #7 창호 건 ㎡당 40만원대에 넣자는 얘기가 있던데 맞나요?",
+      held: "진행 중 입찰 번호·가격으로 보이는 표현이 감지됐어요 (Cluster #7, ㎡당 40만원대)",
     },
   ];
   for (const l of L) {

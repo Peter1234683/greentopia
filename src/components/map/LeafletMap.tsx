@@ -21,8 +21,8 @@ const TONE = {
   highlight: { color: "#ffffff", fillColor: "#24c99a", radius: 7 },
 };
 
-export default function LeafletMap({ center, zoom = 14, markers, circles = [], path, height = 240, fit = true }: MapProps) {
-  const points = markers.map((m) => [m.lat, m.lng] as [number, number]);
+export default function LeafletMap({ center, zoom = 14, markers, circles = [], bubbles = [], path, height = 240, fit = true }: MapProps) {
+  const points = [...markers, ...bubbles].map((m) => [m.lat, m.lng] as [number, number]);
   return (
     <div style={{ height }} className="overflow-hidden rounded-2xl ring-1 ring-line">
       <MapContainer
@@ -38,6 +38,11 @@ export default function LeafletMap({ center, zoom = 14, markers, circles = [], p
         <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         {circles.map((c, i) => (
           <Circle key={i} center={[c.lat, c.lng]} radius={c.radiusM} pathOptions={{ color: "#1a6347", weight: 2, dashArray: "6 6", fillColor: "#24c99a", fillOpacity: 0.08 }} />
+        ))}
+        {bubbles.map((b, i) => (
+          <Circle key={`b${i}`} center={[b.lat, b.lng]} radius={b.radiusM} pathOptions={{ stroke: false, fillColor: "#1a6347", fillOpacity: 0.15 + 0.55 * b.intensity }}>
+            {b.label && <Tooltip direction="top">{b.label}</Tooltip>}
+          </Circle>
         ))}
         {path && path.length > 1 && <Polyline positions={path} pathOptions={{ color: "#072419", weight: 3, dashArray: "2 6" }} />}
         {markers.map((m) => {

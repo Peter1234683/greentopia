@@ -11,6 +11,7 @@ import { runCollusionCheck } from "@/lib/collusionRun";
 import { SETTINGS_DEFAULTS, SETTINGS_SECTIONS, type SettingsSection } from "@/lib/settings";
 import { validateShape } from "@/lib/settingsValidate";
 import { demoAutoBids } from "@/lib/demo";
+import { simulateMatching, type SimParams } from "@/lib/matching/simulate";
 
 export async function reviewContractor(formData: FormData) {
   await requireRole("ADMIN");
@@ -151,4 +152,25 @@ export async function demoAutoBidsAction(formData: FormData) {
   await requireRole("ADMIN");
   await demoAutoBids(String(formData.get("tenderId")));
   revalidatePath("/", "layout");
+}
+
+// ── 매칭 파라미터 시뮬레이션 (F8, DB 변경 없음) ──
+export async function simulateMatchingAction(p: SimParams) {
+  await requireRole("ADMIN");
+  const clamp = (v: unknown, lo: number, hi: number, d: number) => (typeof v === "number" && Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : d);
+  const w = (p.weights ?? {}) as Record<string, unknown>;
+  return simulateMatching({
+    radiusKm: clamp(p.radiusKm, 0.5, 10, 3),
+    timingMonths: clamp(p.timingMonths, 0, 12, 2),
+    minClusterSize: Math.round(clamp(p.minClusterSize, 2, 12, 4)),
+    edgeThreshold: clamp(p.edgeThreshold, 0, 100, 65),
+    weights: {
+      trade: clamp(w.trade, 0, 100, 30),
+      distance: clamp(w.distance, 0, 100, 20),
+      timing: clamp(w.timing, 0, 100, 20),
+      scale: clamp(w.scale, 0, 100, 10),
+      volume: clamp(w.volume, 0, 100, 10),
+      condition: clamp(w.condition, 0, 100, 10),
+    },
+  });
 }

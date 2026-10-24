@@ -44,6 +44,8 @@ export async function runMatching() {
         usage: d.building.usage,
         structure: d.building.structure,
         quantity: quantityFor(d.building, trade, settings.pricing).amount,
+        floors: d.building.floors,
+        households: d.building.households,
       }));
     // 한 건물이 같은 공종으로 두 번 들어가지 않도록
     const seen = new Set<string>();

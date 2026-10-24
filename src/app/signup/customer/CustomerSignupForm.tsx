@@ -5,12 +5,14 @@ import { signupCustomer } from "@/app/actions/auth";
 import { Button, Field, Input } from "@/components/ui";
 import { formValues } from "@/lib/formValues";
 
-export function CustomerSignupForm() {
+export function CustomerSignupForm({ invite }: { invite?: string }) {
   const [state, action, pending] = useActionState(signupCustomer, undefined);
   const e = state?.errors ?? {};
   const { str } = formValues(state?.values);
   return (
     <form action={action} className="mt-8 space-y-4" noValidate>
+      {invite && <input type="hidden" name="invite" value={invite} />}
+      {invite && <p className="rounded-2xl bg-mint-50 px-4 py-3 text-sm text-forest-800 ring-1 ring-mint-100">🙌 이웃의 초대로 가입해요. 공사 수요를 등록하면 초대받은 묶음에 우선 후보로 연결돼요.</p>}
       <Field label="이름" required error={e.name}>
         <Input name="name" defaultValue={str("name")} autoComplete="name" />
       </Field>

@@ -4,10 +4,11 @@ import { CustomerSignupForm } from "./CustomerSignupForm";
 
 export const metadata: Metadata = { title: "건물주 회원가입" };
 
-export default function Page() {
+export default async function Page(props: PageProps<"/signup/customer">) {
+  const { invite } = await props.searchParams;
   return (
     <SignupShell icon="🏠" title="건물주 회원가입" subtitle="1분이면 끝나요. 건물 주소는 나중에 입력해도 돼요.">
-      <CustomerSignupForm />
+      <CustomerSignupForm invite={typeof invite === "string" ? invite.slice(0, 20) : undefined} />
     </SignupShell>
   );
 }

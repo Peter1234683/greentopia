@@ -52,12 +52,14 @@ const GIVEN = ["영희", "철수", "민준", "서연", "정숙", "상철", "미�
 const personName = () => pick(SURNAMES) + pick(GIVEN);
 
 // ── 수요 핫스팟: 이후 마일스톤의 AI 매칭이 Cluster를 만들 수 있도록 같은 공종 수요를 모아둔다 ──
-type Hotspot = { sigungu: string; dong: string; trades: string[]; count: number; usage?: string };
+type Hotspot = { sigungu: string; dong: string; trades: string[]; count: number; usage?: string; structures?: string[]; householdArea?: number };
 const HOTSPOTS: Hotspot[] = [
-  { sigungu: "남구", dong: "대명동", trades: ["WINDOW"], count: 13 },
-  { sigungu: "서구", dong: "비산동", trades: ["WINDOW"], count: 10 },
-  { sigungu: "북구", dong: "침산동", trades: ["EXT_INSULATION", "WINDOW"], count: 8, usage: "MULTI_HOUSEHOLD" },
-  { sigungu: "달서구", dong: "송현동", trades: ["BOILER"], count: 9, usage: "MULTIPLEX" },
+  // structures: 동네마다 비슷한 시기·구조의 건물이 모여 있다 (창호는 조적조/그 외를 따로 묶는다)
+  { sigungu: "남구", dong: "대명동", trades: ["WINDOW"], count: 13, structures: ["BRICK", "MASONRY", "BRICK"] },
+  { sigungu: "서구", dong: "비산동", trades: ["WINDOW"], count: 10, structures: ["RC"] },
+  { sigungu: "북구", dong: "침산동", trades: ["EXT_INSULATION", "WINDOW"], count: 8, usage: "MULTI_HOUSEHOLD", structures: ["BRICK", "MASONRY"] },
+  // 보일러 용량이 비슷하도록 세대 면적 약 80㎡
+  { sigungu: "달서구", dong: "송현동", trades: ["BOILER"], count: 9, usage: "MULTIPLEX", householdArea: 80 },
   { sigungu: "수성구", dong: "황금동", trades: ["ROOF", "INT_INSULATION"], count: 6, usage: "DETACHED" },
 ];
 
@@ -325,7 +327,12 @@ async function main() {
   for (const h of HOTSPOTS) {
     const n = h.sigungu === "남구" && h.dong === "대명동" ? h.count - 1 : h.count;
     for (let i = 0; i < n; i++) {
-      const { building } = await createOwnerWithBuilding(makeBuildingData(h.sigungu, h.dong, h.usage));
+      const base = makeBuildingData(h.sigungu, h.dong, h.usage);
+      const { building } = await createOwnerWithBuilding({
+        ...base,
+        ...(h.structures ? { structure: h.structures[i % h.structures.length] } : {}),
+        ...(h.householdArea ? { households: Math.max(2, Math.round(base.grossArea / h.householdArea)) } : {}),
+      });
       const trades = rand() < 0.75 ? h.trades.slice(0, 1) : h.trades;
       // 핫스팟은 동네 단위로 시기가 비슷하다 (데모 고객: 3개월 뒤) → AI 매칭이 안정적으로 묶을 수 있게
       await db.retrofitDemand.create({ data: { ...makeDemand(trades, "ACTIVE", [2, 4]), buildingId: building.id } });

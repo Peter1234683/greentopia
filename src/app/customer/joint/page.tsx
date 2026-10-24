@@ -6,7 +6,8 @@ import { getSettings } from "@/lib/settings";
 import { actualUnitRanges } from "@/lib/actualPrices";
 import { matchAllForBuilding } from "@/lib/subsidy/service";
 import { blur } from "@/lib/geo";
-import { parseJson, type Trade } from "@/lib/constants";
+import { TRADE_LABEL, parseJson, type Trade } from "@/lib/constants";
+import { neighborNeed } from "@/lib/matching/explain";
 import { ButtonLink, Card } from "@/components/ui";
 import { JointSimulator } from "./JointSimulator";
 import { ClusterCard } from "./ClusterCard";
@@ -57,7 +58,7 @@ export default async function JointPage(props: PageProps<"/customer/joint">) {
         cluster: {
           include: {
             members: { include: { building: true } },
-            tenders: { orderBy: { createdAt: "desc" }, take: 1 },
+            tenders: { orderBy: { createdAt: "desc" }, take: 1, include: { bids: { where: { status: { not: "WITHDRAWN" } }, select: { tierPricesJson: true } } } },
           },
         },
       },
@@ -67,6 +68,9 @@ export default async function JointPage(props: PageProps<"/customer/joint">) {
   // 이자지원 예시는 지원금 DB 의 실제 등록 값(이자 지원율·상환 기간)을 쓴다
   const subsidy = await matchAllForBuilding(user.id, me.id);
   const loanProgram = subsidy?.results.find((r) => r.match.rate != null);
+  // 아직 묶이지 않은 공종만 "몇 세대 더" 안내
+  const clusteredTrades = new Set(members.filter((m) => m.status !== "LEFT").map((m) => m.cluster.trade));
+  const needs = await neighborNeed(me.id, myTrades.filter((t) => !clusteredTrades.has(t)));
 
   return (
     <div className="space-y-5 pt-2">
@@ -92,9 +96,24 @@ export default async function JointPage(props: PageProps<"/customer/joint">) {
             아직 조건이 맞는 묶음이 없어요. 비슷한 시기·공종의 이웃이 더 등록하면 알려드릴게요.
           </Card>
         ) : (
-          members.map((m) => <ClusterCard key={m.id} member={m} meId={me.id} minJoined={settings.matching.minJoinedForTender} />)
+          members.map((m) => <ClusterCard key={m.id} member={m} meId={me.id} minJoined={settings.matching.minJoinedForTender} tiers={settings.pricing.jointDiscountTiers} />)
         )}
       </section>
+
+      <Link href="/customer/joint/map" className="block">
+        <Card className="flex items-center gap-4 hover:ring-mint-300">
+          <span className="text-3xl" aria-hidden="true">🗺️</span>
+          <div className="flex-1">
+            <p className="font-bold">우리 동네 수요 지도</p>
+            <p className="text-sm text-muted">
+              {needs.length > 0 && needs[0].need > 0
+                ? `${TRADE_LABEL[needs[0].trade as Trade]}: ${needs[0].need}세대만 더 모이면 묶음 성사`
+                : "공사별로 이웃 수요가 모인 곳을 확인해요"}
+            </p>
+          </div>
+          <span className="text-xl text-muted" aria-hidden="true">›</span>
+        </Card>
+      </Link>
 
       <section className="space-y-3">
         <h2 className="text-lg font-bold">💡 같이 하면 얼마나 아낄까?</h2>
