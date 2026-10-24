@@ -1,7 +1,7 @@
 "use client";
 
 import "leaflet/dist/leaflet.css";
-import { Circle, CircleMarker, MapContainer, TileLayer, Tooltip, useMap } from "react-leaflet";
+import { Circle, CircleMarker, MapContainer, Polyline, TileLayer, Tooltip, useMap } from "react-leaflet";
 import { useEffect } from "react";
 import type { MapProps } from "./types";
 
@@ -21,7 +21,7 @@ const TONE = {
   highlight: { color: "#ffffff", fillColor: "#24c99a", radius: 7 },
 };
 
-export default function LeafletMap({ center, zoom = 14, markers, circles = [], height = 240, fit = true }: MapProps) {
+export default function LeafletMap({ center, zoom = 14, markers, circles = [], path, height = 240, fit = true }: MapProps) {
   const points = markers.map((m) => [m.lat, m.lng] as [number, number]);
   return (
     <div style={{ height }} className="overflow-hidden rounded-2xl ring-1 ring-line">
@@ -39,11 +39,16 @@ export default function LeafletMap({ center, zoom = 14, markers, circles = [], h
         {circles.map((c, i) => (
           <Circle key={i} center={[c.lat, c.lng]} radius={c.radiusM} pathOptions={{ color: "#1a6347", weight: 2, dashArray: "6 6", fillColor: "#24c99a", fillOpacity: 0.08 }} />
         ))}
+        {path && path.length > 1 && <Polyline positions={path} pathOptions={{ color: "#072419", weight: 3, dashArray: "2 6" }} />}
         {markers.map((m) => {
           const t = TONE[m.tone ?? "member"];
           return (
             <CircleMarker key={m.id} center={[m.lat, m.lng]} radius={t.radius} pathOptions={{ color: t.color, weight: 2, fillColor: t.fillColor, fillOpacity: 1 }}>
-              {m.label && <Tooltip direction="top" offset={[0, -6]}>{m.label}</Tooltip>}
+              {m.label && (
+                <Tooltip direction="top" offset={[0, -6]} permanent={m.permanent}>
+                  {m.label}
+                </Tooltip>
+              )}
             </CircleMarker>
           );
         })}
