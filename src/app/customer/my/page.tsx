@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { requireRole } from "@/lib/dal";
 import { AccountActions } from "@/components/AccountActions";
+import Link from "next/link";
 import { Card } from "@/components/ui";
+import { InstallPrompt } from "@/components/InstallPrompt";
 
 export const metadata: Metadata = { title: "마이" };
 
@@ -24,6 +26,13 @@ export default async function MyPage() {
           <span aria-hidden="true" className="text-muted">›</span>
         </Card>
       </a>
+      <InstallPrompt compact />
+      <Link href="/customer/welcome?replay=1" className="block">
+        <Card className="flex items-center justify-between">
+          <span className="font-semibold">👋 온보딩 다시 보기</span>
+          <span aria-hidden="true" className="text-muted">›</span>
+        </Card>
+      </Link>
       <AccountActions />
     </div>
   );

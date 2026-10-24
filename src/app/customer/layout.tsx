@@ -1,4 +1,6 @@
 import { requireRole } from "@/lib/dal";
+import { demoMenuVisible } from "@/lib/demoMode";
+import { DemoLink } from "@/components/DemoLink";
 import { AppHeader } from "@/components/AppHeader";
 import { BottomTabs, type Tab } from "@/components/BottomTabs";
 import Link from "next/link";
@@ -14,11 +16,12 @@ const TABS: Tab[] = [
 
 export default async function CustomerLayout({ children }: LayoutProps<"/customer">) {
   const user = await requireRole("CUSTOMER");
-  const unread = await unreadCount(user.id);
+  const [unread, demo] = await Promise.all([unreadCount(user.id), demoMenuVisible(user.role)]);
   return (
     <>
       <AppHeader home="/customer" right={
           <span className="flex items-center gap-1">
+            {demo && <DemoLink />}
             <Bell href="/customer/notifications" count={unread} />
             <Link href="/customer/my" aria-label="마이 페이지" className="inline-flex h-9 w-9 items-center justify-center rounded-full text-lg hover:bg-white">
               👤

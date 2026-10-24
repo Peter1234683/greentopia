@@ -1,4 +1,6 @@
 import { requireRole } from "@/lib/dal";
+import { demoMenuVisible } from "@/lib/demoMode";
+import { DemoLink } from "@/components/DemoLink";
 import { AppHeader } from "@/components/AppHeader";
 import { BottomTabs, type Tab } from "@/components/BottomTabs";
 import { Badge } from "@/components/ui";
@@ -16,7 +18,7 @@ const TABS: Tab[] = [
 export default async function ContractorLayout({ children }: LayoutProps<"/contractor">) {
   const user = await requireRole("CONTRACTOR");
   const p = user.contractorProfile!;
-  const unread = await unreadCount(user.id);
+  const [unread, demo] = await Promise.all([unreadCount(user.id), demoMenuVisible(user.role)]);
   return (
     <>
       <AppHeader
@@ -26,6 +28,7 @@ export default async function ContractorLayout({ children }: LayoutProps<"/contr
           <span className="flex items-center gap-2 text-sm text-white/80">
             <span className="max-w-[9rem] truncate">{p.companyName}</span>
             {p.reviewStatus !== "APPROVED" && <Badge tone="warn">{CONTRACTOR_REVIEW_STATUS_LABEL[p.reviewStatus]}</Badge>}
+            {demo && <DemoLink dark />}
             <Bell href="/contractor/notifications" count={unread} dark />
           </span>
         }

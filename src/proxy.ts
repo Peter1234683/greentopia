@@ -7,6 +7,15 @@ const PROTECTED = ["/customer", "/contractor", "/admin"];
 
 export default async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
+  const res = await guard(req, pathname);
+  // ?demo=1 → 헤더에 데모 메뉴 표시 (데모 도구가 켜진 서버에서만 실제로 보인다), ?demo=0 → 숨김
+  const demo = req.nextUrl.searchParams.get("demo");
+  if (demo === "1") res.cookies.set("gt_demo", "1", { path: "/", sameSite: "lax", maxAge: 60 * 60 * 24 });
+  if (demo === "0") res.cookies.delete("gt_demo");
+  return res;
+}
+
+async function guard(req: NextRequest, pathname: string) {
   if (!PROTECTED.some((p) => pathname === p || pathname.startsWith(`${p}/`))) return NextResponse.next();
   const session = await decrypt(req.cookies.get(SESSION_COOKIE)?.value);
   if (!session) return NextResponse.redirect(new URL("/login", req.nextUrl));

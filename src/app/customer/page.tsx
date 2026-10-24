@@ -8,6 +8,7 @@ import { ensureFollowupReminders } from "@/lib/reviews";
 import { matchAllForBuilding } from "@/lib/subsidy/service";
 import { loadDemandCells } from "@/lib/matching/demandMapData";
 import { MapView } from "@/components/map/MapView";
+import { InstallPrompt } from "@/components/InstallPrompt";
 
 const daysAgo = (n: number) => new Date(Date.now() - n * 864e5);
 
@@ -48,8 +49,18 @@ export default async function CustomerHome(props: PageProps<"/customer">) {
     }),
   ]);
 
+  const firstVisit = !user.customerProfile?.onboardedAt;
+
   return (
     <div className="space-y-6">
+      {firstVisit && (
+        <Link href="/customer/welcome" className="mt-2 flex items-center gap-3 rounded-2xl bg-forest-900 px-4 py-3 text-white">
+          <span className="text-2xl" aria-hidden="true">👋</span>
+          <span className="flex-1 text-sm"><b>그린토피아 처음이세요?</b> 1분 둘러보기</span>
+          <span aria-hidden="true">›</span>
+        </Link>
+      )}
+      <InstallPrompt />
       <section className="pt-2">
         <p className="text-muted">{user.name}님, 안녕하세요 👋</p>
         <h1 className="mt-1 text-2xl font-extrabold leading-snug">

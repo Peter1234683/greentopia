@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { InstallPrompt } from "@/components/InstallPrompt";
 import { requireRole } from "@/lib/dal";
 import { myContractor } from "@/lib/bidding/view";
 import { loadPQRules } from "@/lib/bidding/contractors";
@@ -88,6 +89,7 @@ export default async function ContractorHome() {
         </span>
         <span className="text-lg font-extrabold text-mint-300">{newTenders}건 ›</span>
       </Link>
+      <InstallPrompt />
       <Link href="/contractor/insights" className="flex items-center justify-between rounded-2xl bg-white px-4 py-3 ring-1 ring-line/60 hover:ring-mint-300">
         <span className="text-sm font-semibold">📈 권역 수요 인사이트 · 곧 공고될 묶음</span>
         <span className="text-muted" aria-hidden="true">›</span>
