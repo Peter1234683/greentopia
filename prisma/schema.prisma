@@ -1,0 +1,422 @@
+// 그린토피아 데이터 모델
+// - MVP는 SQLite. PostgreSQL 전환 시 provider만 바꾸면 되도록 enum/배열 대신 String을 쓰고,
+//   허용 값은 src/lib/constants.ts 에서 관리한다. (*Json 접미사 필드는 JSON 문자열)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ───────────────────────── 사용자 ─────────────────────────
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  phone        String?
+  role         String // CUSTOMER | CONTRACTOR | ADMIN
+  createdAt    DateTime @default(now())
+
+  customerProfile   CustomerProfile?
+  contractorProfile ContractorProfile?
+  buildings         Building[]
+  documents         Document[]
+  reviews           Review[]
+  reviewReports     ReviewReport[]
+  notifications     Notification[]
+}
+
+model CustomerProfile {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  points Int    @default(0) // 리뷰 작성 등 고객 혜택 포인트
+}
+
+model ContractorProfile {
+  id                   String   @id @default(cuid())
+  userId               String   @unique
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyName          String
+  ceoName              String
+  bizRegNo             String   @unique // 사업자등록번호
+  phone                String
+  officeAddress        String?
+  lat                  Float?
+  lng                  Float?
+  grRegistered         Boolean  @default(false) // GR 사업자 등록 여부
+  grRegNo              String?
+  constructionLicense  String? // 건설업 등록·면허 (예: 실내건축공사업)
+  licenseNo            String?
+  warrantyAvailable    Boolean  @default(false) // 하자보증 가능 여부
+  techStaffCount       Int      @default(0)
+  externalProjectCount Int      @default(0) // 플랫폼 외 대표 시공 실적 건수 (새싹 트랙 초기점수용)
+  portfolio            String? // 대표 시공 실적 서술
+  recentSanction       Boolean  @default(false) // 최근 행정처분·부실시공 이력
+  reviewStatus         String   @default("PENDING") // PENDING | APPROVED | REJECTED (PQ 1차 서류 심사)
+  reviewNote           String?
+  reviewedAt           DateTime?
+  grade                String   @default("SPROUT") // SPROUT | STANDARD | EXCELLENT | GREEN_PARTNER
+  reputationScore      Float? // 리뷰 기반 평판 점수 (0~100), 리뷰 없으면 null
+  createdAt            DateTime @default(now())
+
+  trades      ContractorTrade[]
+  regions     ContractorRegion[]
+  documents   Document[]
+  bids        Bid[]
+  contracts   Contract[]
+  reviews     Review[]
+  nominations TenderNomination[]
+}
+
+model ContractorTrade {
+  id           String            @id @default(cuid())
+  contractorId String
+  contractor   ContractorProfile @relation(fields: [contractorId], references: [id], onDelete: Cascade)
+  trade        String // WINDOW | EXT_INSULATION | INT_INSULATION | BOILER | ROOF
+
+  @@unique([contractorId, trade])
+  @@index([trade])
+}
+
+model ContractorRegion {
+  id           String            @id @default(cuid())
+  contractorId String
+  contractor   ContractorProfile @relation(fields: [contractorId], references: [id], onDelete: Cascade)
+  sido         String
+  sigungu      String // "전체" 이면 시·도 전역
+
+  @@unique([contractorId, sido, sigungu])
+  @@index([sido, sigungu])
+}
+
+// 업로드 파일 (GR 등록 증빙, 고지서, 진단 결과, 리뷰/완료 사진 등)
+model Document {
+  id           String             @id @default(cuid())
+  ownerId      String
+  owner        User               @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  contractorId String?
+  contractor   ContractorProfile? @relation(fields: [contractorId], references: [id], onDelete: Cascade)
+  kind         String // GR_CERT | LICENSE | BILL | DIAGNOSIS_RESULT | REVIEW_PHOTO | COMPLETION_PHOTO
+  path         String
+  originalName String
+  mimeType     String
+  size         Int
+  createdAt    DateTime           @default(now())
+}
+
+// ───────────────────────── 건물 · 수요 · 진단 ─────────────────────────
+
+model Building {
+  id             String    @id @default(cuid())
+  ownerId        String
+  owner          User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  nickname       String?
+  address        String
+  sido           String
+  sigungu        String
+  dong           String
+  lat            Float
+  lng            Float
+  approvalDate   DateTime? // 사용승인일
+  usage          String // DETACHED(단독) | MULTI_HOUSEHOLD(다가구) | MULTIPLEX(다세대)
+  structure      String // RC | MASONRY | BRICK | WOOD | STEEL | OTHER
+  grossArea      Float // 연면적 ㎡
+  floors         Int
+  households     Int
+  windowArea     Float? // 추정 창호 면적 ㎡ (창호 물량 산정용, 사용자 수정 가능)
+  registrySource String    @default("MANUAL") // MOCK | API | MANUAL
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  demands        RetrofitDemand[]
+  diagnoses      EnergyDiagnosis[]
+  clusterMembers ClusterMember[]
+  contracts      Contract[]
+
+  @@index([sigungu, dong])
+}
+
+model RetrofitDemand {
+  id           String   @id @default(cuid())
+  buildingId   String
+  building     Building @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+  tradesJson   String // ["WINDOW","BOILER"]
+  symptomsJson String // ["OLD_WINDOW","COLD_WINTER"] 생활 언어 응답
+  desiredStart DateTime // 희망 공사 시작 월
+  budgetMin    Int? // 원
+  budgetMax    Int?
+  jointIntent  String // YES | MAYBE | NO
+  billElectric Int? // 최근 월 전기요금 (원)
+  billGas      Int? // 최근 월 가스요금 (원)
+  status       String   @default("ACTIVE") // ACTIVE | MATCHED | DONE | CANCELLED
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  clusterMembers ClusterMember[]
+}
+
+model EnergyDiagnosis {
+  id         String   @id @default(cuid())
+  buildingId String
+  building   Building @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+  mode       String // SIMPLE | GRAI_LINK | GRAI_API
+  resultJson String
+  source     String // 예: "간이 추정(그린토피아 규칙 v1)", "GR-AI 사용자 입력"
+  createdAt  DateTime @default(now())
+}
+
+// ───────────────────────── 매칭 ─────────────────────────
+
+model Cluster {
+  id          String   @id @default(cuid())
+  code        Int      @unique // 화면 표시용 번호 (Cluster #12)
+  trade       String
+  status      String   @default("PROPOSED") // PROPOSED | RECRUITING | CONFIRMED | TENDERING | AWARDED | IN_PROGRESS | COMPLETED | CANCELLED
+  radiusKm    Float
+  avgScore    Float
+  centerLat   Float
+  centerLng   Float
+  sigungu     String
+  reasonsJson String? // 묶인 이유 체크리스트
+  createdAt   DateTime @default(now())
+
+  members ClusterMember[]
+  tenders Tender[]
+}
+
+model ClusterMember {
+  id           String          @id @default(cuid())
+  clusterId    String
+  cluster      Cluster         @relation(fields: [clusterId], references: [id], onDelete: Cascade)
+  buildingId   String
+  building     Building        @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+  demandId     String?
+  demand       RetrofitDemand? @relation(fields: [demandId], references: [id], onDelete: SetNull)
+  status       String          @default("PROPOSED") // PROPOSED | JOINED | LEFT
+  quantityJson String? // 공종별 물량 (예: {"WINDOW":{"areaM2":32,"types":{...}}})
+  joinedAt     DateTime?
+
+  @@unique([clusterId, buildingId])
+}
+
+model CompatibilityScore {
+  id            String   @id @default(cuid())
+  buildingAId   String
+  buildingBId   String
+  trade         String
+  total         Float
+  breakdownJson String // {trade:30, distance:18, timing:20, ...}
+  computedAt    DateTime @default(now())
+
+  @@unique([buildingAId, buildingBId, trade])
+}
+
+// ───────────────────────── 입찰 · 평가 · 계약 ─────────────────────────
+
+model Tender {
+  id                   String    @id @default(cuid())
+  clusterId            String
+  cluster              Cluster   @relation(fields: [clusterId], references: [id], onDelete: Cascade)
+  method               String    @default("OPEN") // OPEN | RESTRICTED | NOMINATED | NEGOTIATED
+  recommendedMethod    String?
+  recommendationReason String?
+  methodConfirmedAt    DateTime? // 관리자 확정 시각
+  qualificationJson    String? // 추가 참가 자격 조건
+  priceCap             Int? // 공고 상한가 (원)
+  performanceSpec      String? // 공통 GR 성능조건
+  workStart            DateTime?
+  workEnd              DateTime?
+  deadline             DateTime
+  round                Int       @default(1) // 회차 (재공고 시 증가)
+  parentTenderId       String?
+  parentTender         Tender?   @relation("Reannounce", fields: [parentTenderId], references: [id])
+  reannouncements      Tender[]  @relation("Reannounce")
+  status               String    @default("OPEN") // DRAFT | OPEN | EVALUATING | AWARDED | FAILED | CANCELLED
+  failReason           String?
+  siteVisitCostPolicy  String    @default("PLATFORM") // PLATFORM | WINNER
+  createdAt            DateTime  @default(now())
+
+  bids        Bid[]
+  nominations TenderNomination[]
+  contracts   Contract[]
+}
+
+model TenderNomination {
+  id           String            @id @default(cuid())
+  tenderId     String
+  tender       Tender            @relation(fields: [tenderId], references: [id], onDelete: Cascade)
+  contractorId String
+  contractor   ContractorProfile @relation(fields: [contractorId], references: [id], onDelete: Cascade)
+
+  @@unique([tenderId, contractorId])
+}
+
+model Bid {
+  id                 String            @id @default(cuid())
+  tenderId           String
+  tender             Tender            @relation(fields: [tenderId], references: [id], onDelete: Cascade)
+  contractorId       String
+  contractor         ContractorProfile @relation(fields: [contractorId], references: [id], onDelete: Cascade)
+  tierPricesJson     String // 물량 구간별 단가 [{minBuildings:7,maxBuildings:9,unitPrice:...}]
+  unitPriceTableJson String // 유형·규격별 단가표
+  totalPrice         Int // 현재 참여 물량 기준 총액 (원)
+  durationDays       Int
+  warrantyMonths     Int // 하자보증 기간
+  asMonths           Int // 무상 A/S 기간
+  staffPlan          String?
+  planSummary        String?
+  dumpingReason      String? // 저가 입찰 사유서
+  status             String            @default("SUBMITTED") // DRAFT | SUBMITTED | WON | LOST | WITHDRAWN
+  submittedAt        DateTime?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  evaluation Evaluation?
+  contracts  Contract[]
+
+  @@unique([tenderId, contractorId])
+}
+
+model Evaluation {
+  id             String   @id @default(cuid())
+  bidId          String   @unique
+  bid            Bid      @relation(fields: [bidId], references: [id], onDelete: Cascade)
+  pqPassed       Boolean
+  pqDetailsJson  String
+  scoresJson     String // {price:45.2, record:18, duration:8, warranty:9, reputation:7}
+  dumpingPenalty Float    @default(0)
+  total          Float
+  rank           Int?
+  createdAt      DateTime @default(now())
+}
+
+// 계약은 건물별 개별 체결 (플랫폼은 공동발주 대행·중개)
+model Contract {
+  id           String            @id @default(cuid())
+  buildingId   String
+  building     Building          @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+  contractorId String
+  contractor   ContractorProfile @relation(fields: [contractorId], references: [id], onDelete: Cascade)
+  tenderId     String?
+  tender       Tender?           @relation(fields: [tenderId], references: [id], onDelete: SetNull)
+  bidId        String?
+  bid          Bid?              @relation(fields: [bidId], references: [id], onDelete: SetNull)
+  amount       Int
+  isNegotiated Boolean           @default(false) // 수의계약 여부
+  status       String            @default("PENDING") // PENDING | SIGNED | CANCELLED
+  signedAt     DateTime?
+  createdAt    DateTime          @default(now())
+
+  project Project?
+}
+
+model Project {
+  id          String    @id @default(cuid())
+  contractId  String    @unique
+  contract    Contract  @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  status      String    @default("SITE_CHECK") // SITE_CHECK | CONTRACTED | IN_PROGRESS | COMPLETED | AS
+  plannedEnd  DateTime?
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  reviews Review[]
+}
+
+// ───────────────────────── 리뷰 · 평판 · 규칙 ─────────────────────────
+
+model Review {
+  id                String            @id @default(cuid())
+  projectId         String
+  project           Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  authorId          String
+  author            User              @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  contractorId      String
+  contractor        ContractorProfile @relation(fields: [contractorId], references: [id], onDelete: Cascade)
+  kind              String            @default("INITIAL") // INITIAL | FOLLOWUP_6M | FOLLOWUP_12M
+  ratingQuality     Int
+  ratingSchedule    Int
+  ratingCleanliness Int
+  ratingComm        Int
+  ratingAS          Int
+  ratingValue       Int
+  complaintTagsJson String            @default("[]")
+  text              String?
+  photosJson        String            @default("[]")
+  defectOccurred    Boolean? // 후속 리뷰: 하자 발생 여부
+  defectResolved    Boolean?
+  reply             String?
+  repliedAt         DateTime?
+  status            String            @default("VISIBLE") // VISIBLE | REPORTED | HIDDEN
+  createdAt         DateTime          @default(now())
+
+  reports ReviewReport[]
+
+  @@unique([projectId, kind]) // 1공사 1리뷰(+후속)
+}
+
+model ReviewReport {
+  id         String   @id @default(cuid())
+  reviewId   String
+  review     Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  reporterId String
+  reporter   User     @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+  reason     String
+  status     String   @default("OPEN") // OPEN | ACCEPTED | REJECTED
+  createdAt  DateTime @default(now())
+}
+
+model PQRule {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  kind        String // COMPLAINT_TAG_RATIO | REQUIRE_GR | REQUIRE_LICENSE | REQUIRE_WARRANTY | NO_SANCTION
+  paramsJson  String   @default("{}") // {tag:"DEFECT_DELAY", ratio:0.3, minReviews:3}
+  action      String   @default("FAIL") // FAIL | WARN
+  active      Boolean  @default(true)
+  source      String   @default("MANUAL") // MANUAL | REVIEW_CANDIDATE
+  createdAt   DateTime @default(now())
+}
+
+model Benefit {
+  id          String @id @default(cuid())
+  grade       String
+  kind        String // NOMINATION_POOL | REPUTATION_BONUS | FEE_DISCOUNT | PRIORITY_ALERT | BADGE
+  description String
+  valueJson   String @default("{}")
+}
+
+// 관리자 수정 가능한 설정값. 코드 기본값(src/config) 위에 덮어쓴다.
+model Config {
+  key       String   @id
+  valueJson String
+  updatedBy String?
+  updatedAt DateTime @updatedAt
+}
+
+model CollusionFlag {
+  id                String   @id @default(cuid())
+  kind              String // ROTATION | CLOSE_PRICES
+  contractorIdsJson String
+  tenderIdsJson     String
+  detail            String
+  status            String   @default("OPEN") // OPEN | DISMISSED | CONFIRMED
+  createdAt         DateTime @default(now())
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  body      String
+  link      String?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+}
