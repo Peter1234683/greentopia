@@ -19,7 +19,7 @@ run() {
   echo "== $1: $oks ok"
   if [ -n "$bad" ]; then echo "$bad" | head -5; fail=1; fi
 }
-for group in "e2e-p2" "e2e-m1 e2e-m2 e2e-m3" "e2e-m4" "e2e-m5" "e2e-m6" "e2e-m7 e2e-m8" "e2e-m9" "e2e-demo"; do
+for group in "e2e-p3" "e2e-p2" "e2e-m1 e2e-m2 e2e-m3" "e2e-m4" "e2e-m5" "e2e-m6" "e2e-m7 e2e-m8" "e2e-m9" "e2e-demo"; do
   start
   for t in $group; do run "$t"; done
 done

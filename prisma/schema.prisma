@@ -117,7 +117,7 @@ model Document {
   contractor   ContractorProfile? @relation(fields: [contractorId], references: [id], onDelete: Cascade)
   buildingId   String?
   building     Building?          @relation(fields: [buildingId], references: [id], onDelete: Cascade)
-  kind         String // GR_CERT | LICENSE | BILL | DIAGNOSIS_RESULT | REVIEW_PHOTO | COMPLETION_PHOTO
+  kind         String // GR_CERT | LICENSE | BILL | DIAGNOSIS_RESULT | REVIEW_PHOTO | COMPLETION_PHOTO | COMMUNITY_PHOTO | LOUNGE_FILE
   path         String
   originalName String
   mimeType     String

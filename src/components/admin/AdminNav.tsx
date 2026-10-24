@@ -10,6 +10,7 @@ const ITEMS = [
   { href: "/admin/tenders", label: "입찰" },
   { href: "/admin/subsidies", label: "지원금" },
   { href: "/admin/reviews", label: "리뷰·PQ" },
+  { href: "/admin/community", label: "커뮤니티" },
   { href: "/admin/monitoring", label: "담합 감시" },
   { href: "/admin/settings", label: "설정" },
 ];

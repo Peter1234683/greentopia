@@ -8,8 +8,8 @@ import { CONTRACTOR_REVIEW_STATUS_LABEL } from "@/lib/constants";
 const TABS: Tab[] = [
   { href: "/contractor", label: "홈", icon: "📊" },
   { href: "/contractor/tenders", label: "입찰 공고", icon: "📢" },
-  { href: "/contractor/bids", label: "내 입찰", icon: "📝" },
-  { href: "/contractor/projects", label: "시공 관리", icon: "🏗️" },
+  { href: "/contractor/bids", label: "내 입찰·시공", icon: "📝", also: ["/contractor/projects"] },
+  { href: "/contractor/lounge", label: "라운지", icon: "💬" },
   { href: "/contractor/company", label: "내 업체", icon: "🏢" },
 ];
 

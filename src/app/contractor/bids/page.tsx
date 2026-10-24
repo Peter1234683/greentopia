@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { WorkTabs } from "@/components/contractor/WorkTabs";
 import Link from "next/link";
 import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
@@ -30,6 +31,7 @@ export default async function MyBids(props: PageProps<"/contractor/bids">) {
   });
   return (
     <div className="space-y-4">
+      <WorkTabs current="bids" />
       <h1 className="text-xl font-extrabold">내 입찰</h1>
       {submitted && <p role="status" className="rounded-2xl bg-forest-800 px-4 py-3 text-sm text-white">✅ 입찰서를 제출했어요. 마감 전까지 수정할 수 있어요.</p>}
       {bids.length === 0 && (

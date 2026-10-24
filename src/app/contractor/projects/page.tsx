@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { WorkTabs } from "@/components/contractor/WorkTabs";
 import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
@@ -56,6 +57,7 @@ export default async function ContractorProjects() {
 
   return (
     <div className="space-y-4">
+      <WorkTabs current="projects" />
       <h1 className="text-xl font-extrabold">시공 관리</h1>
       {contracts.length === 0 && <Card className="text-center text-sm text-muted">아직 낙찰받은 공사가 없어요.</Card>}
       {events.length > 0 && <Card className="p-4"><MonthCalendar events={events} /></Card>}
