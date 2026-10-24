@@ -7,7 +7,7 @@ import { parseJson } from "@/lib/constants";
 
 export const metadata: Metadata = { title: "담합 감시" };
 
-const KIND: Record<string, string> = { ROTATION: "낙찰 순환", CLOSE_PRICES: "입찰가 근접" };
+const KIND: Record<string, string> = { ROTATION: "낙찰 순환", CLOSE_PRICES: "입찰가 근접", BOARD_KEYWORD: "라운지 게시글" };
 
 export default async function Monitoring() {
   const settings = await getSettings();

@@ -10,10 +10,10 @@ export function checkSupports(b: { approvalDate: Date | null; usage: string }, t
   const is = s.interestSupport;
   const before = new Date(`${is.approvalBefore}T00:00:00+09:00`);
   const interestChecks = [
-    {
-      label: `사용승인일 ${is.approvalBefore.replace(/-/g, ".")} 이전`,
-      ok: !!b.approvalDate && b.approvalDate < before,
-    },
+    // 사용승인일 요건이 설정된 경우에만 확인 (2026 공고 기준 미확인 → 기본값은 제한 없음)
+    ...(before.getFullYear() < 2100
+      ? [{ label: `사용승인일 ${is.approvalBefore.replace(/-/g, ".")} 이전`, ok: !!b.approvalDate && b.approvalDate < before }]
+      : []),
     { label: `대상 용도 (${is.eligibleUsages.map((u) => USAGE_LABEL[u]).join("·")})`, ok: is.eligibleUsages.includes(b.usage) },
     ...(is.requiresEnergyImprovement
       ? [{ label: "에너지 성능 개선 공사(창호·단열·지붕) 포함", ok: trades.some((t) => ENVELOPE_TRADES.includes(t)) }]

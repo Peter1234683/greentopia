@@ -17,7 +17,7 @@ const sql = (q) => JSON.parse(execSync(`python3 ${SP}/q.py ` + JSON.stringify(q)
   ok(await p.isVisible('text=입찰가 근접'), 'seeded close-price flag shown');
   await p.screenshot({ path: `${SP}/shots/m9-01-monitoring.png`, fullPage: true });
   await p.click('button:has-text("무혐의 처리")'); await p.waitForSelector('text=무혐의');
-  ok(sql("select status from CollusionFlag")[0].status === 'DISMISSED', 'flag dismissed');
+  ok(sql("select count(*) n from CollusionFlag where status='DISMISSED'")[0].n === 1, 'flag dismissed');
 
   await p.goto(B + '/admin/settings');
   const sec = p.locator('details', { hasText: 'AI 매칭' });

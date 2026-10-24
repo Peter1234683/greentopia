@@ -12,6 +12,7 @@ import { DAEGU_DISTRICTS, SIDO, type District } from "../src/config/regions";
 import { runMatching } from "../src/lib/matching/run";
 import { recomputeContractor } from "../src/lib/reviews";
 import { runCollusionCheck } from "../src/lib/collusionRun";
+import { seedExtras } from "./seedExtras";
 import { createTenderDraft } from "../src/lib/bidding/tenders";
 import { confirmTender } from "../src/lib/bidding/lifecycle";
 import { bidTotal, tierRanges } from "../src/lib/bidding/bidMath";
@@ -215,6 +216,11 @@ function reviewFor(mood: PastJob["mood"]) {
 async function main() {
   // 초기화 (자식 → 부모 순)
   await db.$transaction([
+    db.safetyPledge.deleteMany(), db.reviewFlag.deleteMany(), db.completionInspection.deleteMany(), db.paymentMilestone.deleteMany(),
+    db.invite.deleteMany(), db.checklistItem.deleteMany(), db.successGuide.deleteMany(), db.photoDiagnosisResult.deleteMany(),
+    db.diagnosisPhoto.deleteMany(), db.boardRuleAgreement.deleteMany(), db.communityReport.deleteMany(), db.communityReaction.deleteMany(),
+    db.communityComment.deleteMany(), db.communityPost.deleteMany(), db.advisorChatMessage.deleteMany(), db.subsidyMatchResult.deleteMany(),
+    db.subsidyProgram.deleteMany(),
     db.notification.deleteMany(), db.collusionFlag.deleteMany(), db.config.deleteMany(),
     db.benefit.deleteMany(), db.pQRule.deleteMany(), db.reviewReport.deleteMany(), db.review.deleteMany(),
     db.project.deleteMany(), db.contract.deleteMany(), db.evaluation.deleteMany(), db.bid.deleteMany(),
@@ -515,6 +521,7 @@ async function main() {
   }
 
   await runCollusionCheck();
+  await seedExtras(db, contractorId);
 
   const counts = {
     users: await db.user.count(),
@@ -526,6 +533,9 @@ async function main() {
     tenders: await db.tender.groupBy({ by: ["status"], _count: true }),
     openBids: await db.bid.count({ where: { status: "SUBMITTED" } }),
     collusionFlags: await db.collusionFlag.count(),
+    subsidyPrograms: await db.subsidyProgram.count(),
+    ownerPosts: await db.communityPost.count({ where: { boardType: "OWNER" } }),
+    loungePosts: await db.communityPost.count({ where: { boardType: "CONTRACTOR" } }),
     contracts: await db.contract.count(),
     reviews: await db.review.count(),
   };

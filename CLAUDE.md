@@ -11,3 +11,5 @@
 - 계약은 건물별 개별 체결, 플랫폼은 공동발주 대행·중개자.
 - 확인: `npm run typecheck && npm run lint && npm test` (계산 엔진), 화면 흐름은 `npm run build && npm run test:e2e`.
 - 시드는 결정적 난수를 쓴다. 데모 고객이 Cluster 에 묶이지 않으면 시드가 오류로 멈춘다 (README 데모 시나리오 참고).
+- AI 기능은 `src/lib/ai` 의 `aiJson` / `aiChat` 만 거친다. 항상 규칙 기반 fallback 을 함께 넘기고, AI 결과에는 "AI 참고 의견" 표시.
+- 지원금 정보는 지원금 DB(SubsidyProgram)에 출처가 있는 항목만. 수치를 코드나 프롬프트에 지어 넣지 않는다.

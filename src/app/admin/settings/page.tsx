@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { db } from "@/lib/db";
 import { getSettings, SETTINGS_SECTIONS } from "@/lib/settings";
 import { SettingsEditor } from "./SettingsEditor";
+import { aiStatus } from "@/lib/ai";
 
 export const metadata: Metadata = { title: "설정" };
 
@@ -24,6 +25,12 @@ export default async function SettingsPage() {
           에너지 간이 진단 계수는 src/config/diagnosis.ts 에서 관리해요.
         </p>
       </div>
+      <section className="rounded-2xl bg-white p-4 ring-1 ring-line/60">
+        <p className="font-bold">AI 제공자: {aiStatus().label}</p>
+        <p className="mt-1 text-sm text-muted">
+          서버 환경 변수 AI_PROVIDER · ANTHROPIC_API_KEY · GEMINI_API_KEY 로 정해져요. 키가 없거나 응답이 검증에 실패하면 규칙 기반 결과로 대체돼요.
+        </p>
+      </section>
       {SETTINGS_SECTIONS.map((s) => (
         <SettingsEditor
           key={s}

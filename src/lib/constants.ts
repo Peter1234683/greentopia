@@ -136,3 +136,50 @@ export function parseJson<T>(value: string | null | undefined, fallback: T): T {
     return fallback;
   }
 }
+
+// ── 지원금 (F1) ──
+export const BENEFICIARY_TYPES = [
+  { code: "NEWLYWED", label: "신혼부부" },
+  { code: "MULTI_CHILD", label: "다자녀" },
+  { code: "SENIOR", label: "고령자" },
+  { code: "LOW_INCOME", label: "차상위" },
+  { code: "VETERAN", label: "국가유공자" },
+] as const;
+
+export const SUBSIDY_STATUS_LABEL: Record<string, string> = { ACTIVE: "진행 중", CLOSED: "마감", UNVERIFIED: "검증 필요" };
+
+// ── 커뮤니티 (F2·F3) ──
+export const OWNER_CATEGORIES = [
+  { code: "TIP", label: "시공 노하우&팁", icon: "💡" },
+  { code: "REVIEW", label: "시공 전·후 후기", icon: "📸" },
+  { code: "SUBSIDY", label: "지원금 꿀팁", icon: "💰" },
+  { code: "QNA", label: "우리동네 Q&A", icon: "❓" },
+  { code: "RECRUIT", label: "이웃 모집&공동구매", icon: "🤝" },
+  { code: "NOTICE", label: "공지", icon: "📢" },
+] as const;
+
+export const CONTRACTOR_CATEGORIES = [
+  { code: "TECH", label: "시공 기술·공법", icon: "🛠️" },
+  { code: "MATERIAL", label: "자재·단가 정보", icon: "📦" },
+  { code: "PAPERWORK", label: "지원사업·서류 실무", icon: "📋" },
+  { code: "SAFETY", label: "안전·하자 사례", icon: "⚠️" },
+  { code: "HIRING", label: "협력·하도급 구인", icon: "🤝" },
+  { code: "NOTICE", label: "플랫폼 공지", icon: "📢" },
+] as const;
+
+// ── 사진 진단 (F4) ──
+export const PHOTO_PARTS = [
+  { code: "WINDOW", label: "창호" },
+  { code: "WALL", label: "벽체" },
+  { code: "CEILING", label: "천장" },
+  { code: "ROOF", label: "지붕·옥상" },
+  { code: "BOILER", label: "보일러" },
+  { code: "OTHER", label: "기타" },
+] as const;
+
+// ── 안심 보장제 (F11) ──
+export const SAFETY_PLEDGE_ITEMS = [
+  { code: "NO_EXTRA_COST", label: "계약 외 추가비용 요구 금지" },
+  { code: "DELAY_PENALTY", label: "일정 지연 시 지체상금 지급" },
+  { code: "REDO_POOR_FINISH", label: "마감 불량 시 재시공" },
+] as const;
