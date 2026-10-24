@@ -6,6 +6,7 @@ import { requireRole } from "@/lib/dal";
 import { confirmTender } from "@/lib/bidding/lifecycle";
 import { closeDueTenders, closeTender } from "@/lib/bidding/close";
 import { runMatching } from "@/lib/matching/run";
+import { recomputeContractor } from "@/lib/reviews";
 
 export async function reviewContractor(formData: FormData) {
   await requireRole("ADMIN");
@@ -55,5 +56,47 @@ export async function closeDueTendersAction() {
 export async function runMatchingAction() {
   await requireRole("ADMIN");
   await runMatching();
+  revalidatePath("/", "layout");
+}
+
+// ── 리뷰 · PQ ──
+export async function resolveReport(formData: FormData) {
+  await requireRole("ADMIN");
+  const id = String(formData.get("reportId"));
+  const accept = formData.get("decision") === "accept";
+  const report = await db.reviewReport.update({ where: { id }, data: { status: accept ? "ACCEPTED" : "REJECTED" }, include: { review: true } });
+  const others = await db.reviewReport.count({ where: { reviewId: report.reviewId, status: "OPEN" } });
+  if (accept || others === 0) await db.review.update({ where: { id: report.reviewId }, data: { status: accept ? "HIDDEN" : "VISIBLE" } });
+  await recomputeContractor(report.review.contractorId);
+  revalidatePath("/", "layout");
+}
+
+export async function addPQRuleFromCandidate(formData: FormData) {
+  await requireRole("ADMIN");
+  const tag = String(formData.get("tag"));
+  const label = String(formData.get("label"));
+  const ratio = Number(formData.get("ratio"));
+  const minReviews = Number(formData.get("minReviews"));
+  const action = formData.get("action") === "FAIL" ? "FAIL" : "WARN";
+  await db.pQRule.create({
+    data: {
+      name: `리뷰 불만: ${label}`,
+      description: `리뷰 ${minReviews}건 이상 업체 중 '${label}' 태그 비율이 ${Math.round(ratio * 100)}% 이상이면 ${action === "FAIL" ? "PQ 탈락" : "경고"}`,
+      kind: "COMPLAINT_TAG_RATIO",
+      paramsJson: JSON.stringify({ tag, ratio, minReviews }),
+      action,
+      source: "REVIEW_CANDIDATE",
+    },
+  });
+  revalidatePath("/", "layout");
+}
+
+export async function updatePQRule(formData: FormData) {
+  await requireRole("ADMIN");
+  const id = String(formData.get("ruleId"));
+  const op = String(formData.get("op"));
+  const r = await db.pQRule.findUniqueOrThrow({ where: { id } });
+  if (op === "toggle") await db.pQRule.update({ where: { id }, data: { active: !r.active } });
+  if (op === "action") await db.pQRule.update({ where: { id }, data: { action: r.action === "FAIL" ? "WARN" : "FAIL" } });
   revalidatePath("/", "layout");
 }

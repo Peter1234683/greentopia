@@ -4,14 +4,16 @@ export const REPUTATION_DEFAULTS = {
   recencyHalfLifeDays: 365, // 최근 리뷰일수록 가중
   defectResolutionWeight: 10, // 하자 처리율 반영 (점)
   scheduleAdherenceWeight: 10, // 기간 준수율 반영 (점)
+  // 불만 태그 감점: 태그 점수 × (해당 태그 리뷰 비율) × tagPenaltyScale  (예: 하자 처리 지연이 리뷰 60% → 4 × 0.6 × 5 = 12점)
   tagPenalty: { DELAY: 2, EXTRA_COST: 3, POOR_FINISH: 3, NOISE_DUST: 1, NO_CONTACT: 3, DEFECT_DELAY: 4, SAFETY: 4 } as Record<string, number>,
+  tagPenaltyScale: 5,
   maxTagPenalty: 20,
   // 새싹 트랙: 리뷰가 없을 때 외부 실적으로 초기 점수
   sproutBase: 60,
   sproutPerExternalProject: 0.5,
   sproutMax: 75,
   grades: [
-    { grade: "GREEN_PARTNER", minScore: 88, minReviews: 8 },
+    { grade: "GREEN_PARTNER", minScore: 88, minReviews: 6 },
     { grade: "EXCELLENT", minScore: 80, minReviews: 4 },
     { grade: "STANDARD", minScore: 0, minReviews: 1 },
     { grade: "SPROUT", minScore: 0, minReviews: 0 },

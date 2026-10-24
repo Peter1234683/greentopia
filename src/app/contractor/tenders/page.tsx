@@ -131,12 +131,12 @@ export default async function TendersPage(props: PageProps<"/contractor/tenders"
                   공사 {t.workStart?.toLocaleDateString("ko-KR")} ~ {t.workEnd?.toLocaleDateString("ko-KR")} · 마감 {t.deadline.toLocaleDateString("ko-KR")}
                 </p>
                 <div className="mt-2">
-                  {t.bids.length > 0 ? (
-                    <Badge tone="forest">입찰서 제출함</Badge>
-                  ) : elig.eligible ? (
-                    <Badge tone="mint">참가 가능</Badge>
-                  ) : (
-                    <p className="text-xs font-semibold text-danger">{elig.failures[0]}</p>
+                  {t.bids.length > 0 ? <Badge tone="forest">입찰서 제출함</Badge> : elig.eligible && <Badge tone="mint">참가 가능</Badge>}
+                  {!elig.eligible && (
+                    <p className="mt-1 text-xs font-semibold text-danger">
+                      {elig.failures[0]}
+                      {t.bids.length > 0 && " · 제출한 입찰서는 평가에서 PQ 탈락 처리돼요"}
+                    </p>
                   )}
                   {elig.warnings.map((w) => <p key={w} className="mt-1 text-xs text-warn">{w}</p>)}
                 </div>

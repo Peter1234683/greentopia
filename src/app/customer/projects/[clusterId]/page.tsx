@@ -95,7 +95,8 @@ export default async function ProjectDetail(props: PageProps<"/customer/projects
               <div key={b.id} className={`rounded-2xl p-3 ring-1 ${b.status === "WON" ? "bg-mint-50 ring-forest-700" : "bg-white ring-line"}`}>
                 <div className="flex items-center justify-between">
                   <p className="font-bold">
-                    {b.evaluation!.rank}위 · {b.contractor.companyName}
+                    {b.evaluation!.rank}위 ·{" "}
+                    <Link href={`/customer/contractors/${b.contractorId}`} className="underline underline-offset-4">{b.contractor.companyName}</Link>
                     {b.status === "WON" && <span className="ml-2 align-middle"><Badge tone="forest">낙찰</Badge></span>}
                   </p>
                   <p className="text-sm tabular-nums">{b.evaluation!.total.toFixed(1)}점</p>

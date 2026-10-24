@@ -10,6 +10,7 @@ import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { DAEGU_DISTRICTS, SIDO, type District } from "../src/config/regions";
 import { runMatching } from "../src/lib/matching/run";
+import { recomputeContractor } from "../src/lib/reviews";
 import { createTenderDraft } from "../src/lib/bidding/tenders";
 import { confirmTender } from "../src/lib/bidding/lifecycle";
 import { bidTotal, tierRanges } from "../src/lib/bidding/bidMath";
@@ -169,6 +170,7 @@ const PAST: PastJob[] = [
   { code: 2, sigungu: "북구", dong: "산격동", trade: "EXT_INSULATION", usage: "MULTI_HOUSEHOLD", size: 5, bidders: ["c06@demo.kr", "c02@demo.kr", "c07@demo.kr"], completed: "2025-07-15", mood: "mixed" },
   { code: 3, sigungu: "달서구", dong: "본리동", trade: "BOILER", usage: "MULTIPLEX", size: 5, bidders: ["c05@demo.kr", "c08@demo.kr", "c12@demo.kr"], completed: "2025-09-30", mood: "defect" },
   { code: 4, sigungu: "수성구", dong: "만촌동", trade: "WINDOW", size: 4, bidders: ["c02@demo.kr", "contractor@demo.kr", "c03@demo.kr"], completed: "2025-11-12", mood: "good" },
+  { code: 5, sigungu: "동구", dong: "신암동", trade: "EXT_INSULATION", usage: "MULTI_HOUSEHOLD", size: 5, bidders: ["c02@demo.kr", "c07@demo.kr", "c03@demo.kr"], completed: "2025-03-10", mood: "good" },
 ];
 
 // 시드용 단가 가정 (원). 실제 화면의 예상가 산정은 src/config/pricing.ts(마일스톤 4)에서 관리한다.
@@ -414,13 +416,8 @@ async function main() {
     }
   }
 
-  // ── 평판 점수 (임시: 항목 평균 × 20. 정식 산식은 마일스톤 8) ──
-  for (const id of Object.values(contractorId)) {
-    const reviews = await db.review.findMany({ where: { contractorId: id } });
-    if (!reviews.length) continue;
-    const avg = reviews.reduce((s, r) => s + (r.ratingQuality + r.ratingSchedule + r.ratingCleanliness + r.ratingComm + r.ratingAS + r.ratingValue) / 6, 0) / reviews.length;
-    await db.contractorProfile.update({ where: { id }, data: { reputationScore: +(avg * 20).toFixed(1) } });
-  }
+  // ── 평판 점수·등급: 리뷰 → 평판 산식(src/lib/reputation.ts)으로 계산 ──
+  for (const id of Object.values(contractorId)) await recomputeContractor(id, { silent: true });
 
   // ── 기본 PQ 규칙 · 등급 혜택 ──
   await db.pQRule.createMany({
