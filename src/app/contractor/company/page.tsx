@@ -7,7 +7,9 @@ import { replyReview, reportReview } from "@/app/actions/review";
 import { AccountActions } from "@/components/AccountActions";
 import { ReviewCard } from "@/components/ReviewCard";
 import { Badge, Button, Card, Input } from "@/components/ui";
-import { COMPLAINT_TAGS, CONTRACTOR_REVIEW_STATUS_LABEL, GRADE_LABEL, TRADE_LABEL, type Grade, type Trade } from "@/lib/constants";
+import { saveSafetyPledge } from "@/app/actions/company";
+import { getSettings } from "@/lib/settings";
+import { COMPLAINT_TAGS, SAFETY_PLEDGE_ITEMS, parseJson, CONTRACTOR_REVIEW_STATUS_LABEL, GRADE_LABEL, TRADE_LABEL, type Grade, type Trade } from "@/lib/constants";
 
 export const metadata: Metadata = { title: "내 업체" };
 
@@ -26,13 +28,16 @@ function Bar({ label, value, max = 5 }: { label: string; value: number; max?: nu
 export default async function CompanyPage() {
   const user = await requireRole("CONTRACTOR");
   const { p, rep, reviews, benefits, next, sproutScore } = await reputationDetail(user.contractorProfile!.id);
-  const extra = await db.contractorProfile.findUniqueOrThrow({ where: { id: p.id }, include: { trades: true, regions: true, documents: true } });
+  const extra = await db.contractorProfile.findUniqueOrThrow({ where: { id: p.id }, include: { trades: true, regions: true, documents: true, safetyPledge: true } });
+  const pledged = parseJson<string[]>(extra.safetyPledge?.itemsJson, []);
+  const settings = await getSettings();
   const rows: [string, string][] = [
     ["대표자", p.ceoName],
     ["사업자등록번호", p.bizRegNo],
     ["GR 사업자", p.grRegistered ? `등록 (${p.grRegNo ?? "-"})` : "미등록"],
     ["건설업 등록·면허", [p.constructionLicense, p.licenseNo].filter(Boolean).join(" · ") || "-"],
     ["하자보증", p.warrantyAvailable ? "가능" : "불가"],
+    ["영업배상 책임보험", p.liabilityInsurance ? "가입" : "미가입"],
     ["기술인력 / 외부 실적", `${p.techStaffCount}명 / ${p.externalProjectCount}건`],
   ];
 
@@ -118,6 +123,24 @@ export default async function CompanyPage() {
           </ReviewCard>
         ))}
       </section>
+
+      <Card className="p-4">
+        <p className="font-bold">🛡️ 안심 보장제</p>
+        <p className="mt-1 text-sm text-muted">참여한 약속은 업체 프로필에 배지로 보이고, 종합평가 A/S 항목에 항목당 배점의 {Math.round(settings.bidding.safetyPledgeBonusPerItem * 100)}%가 더해져요 (A/S 배점 상한).</p>
+        <form action={saveSafetyPledge} className="mt-3 space-y-2">
+          {SAFETY_PLEDGE_ITEMS.map((i) => (
+            <label key={i.code} className="flex items-center gap-2 text-sm">
+              <input type="checkbox" name="items" value={i.code} defaultChecked={pledged.includes(i.code)} className="h-5 w-5 accent-forest-700" />
+              {i.label}
+            </label>
+          ))}
+          <label className="flex items-center gap-2 border-t border-line pt-2 text-sm">
+            <input type="checkbox" name="liabilityInsurance" defaultChecked={p.liabilityInsurance} className="h-5 w-5 accent-forest-700" />
+            영업배상 책임보험 가입 (증권은 운영자가 확인해요)
+          </label>
+          <Button variant="outline" className="w-full py-2.5 text-sm">저장</Button>
+        </form>
+      </Card>
 
       <Card className="p-4">
         <p className="mb-2 font-bold">업체 정보</p>

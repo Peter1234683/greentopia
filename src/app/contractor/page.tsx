@@ -88,6 +88,10 @@ export default async function ContractorHome() {
         </span>
         <span className="text-lg font-extrabold text-mint-300">{newTenders}건 ›</span>
       </Link>
+      <Link href="/contractor/insights" className="flex items-center justify-between rounded-2xl bg-white px-4 py-3 ring-1 ring-line/60 hover:ring-mint-300">
+        <span className="text-sm font-semibold">📈 권역 수요 인사이트 · 곧 공고될 묶음</span>
+        <span className="text-muted" aria-hidden="true">›</span>
+      </Link>
 
       <div className="grid grid-cols-2 gap-3">
         {kpis.map(([label, value]) => (

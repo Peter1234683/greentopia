@@ -5,15 +5,17 @@ import { Badge } from "./ui";
 
 const KIND: Record<string, string> = { INITIAL: "시공 후기", FOLLOWUP_6M: "6개월 후속", FOLLOWUP_12M: "1년 후속" };
 
-export function ReviewCard({ r, author, children }: { r: Review; author?: string; children?: React.ReactNode }) {
+export function ReviewCard({ r, author, children, verified, pendingCheck }: { r: Review; author?: string; children?: React.ReactNode; verified?: boolean; pendingCheck?: boolean }) {
   const tags = parseJson<string[]>(r.complaintTagsJson, []);
   const photos = parseJson<string[]>(r.photosJson, []);
   const avg = RATING_KEYS.reduce((s, [, f]) => s + r[f], 0) / RATING_KEYS.length;
   return (
     <div className="rounded-2xl bg-white p-4 ring-1 ring-line/60">
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Badge tone={r.kind === "INITIAL" ? "mint" : "gray"}>{KIND[r.kind]}</Badge>
+          {verified && <Badge tone="forest">✔ 단계별 지급 완료 인증 후기</Badge>}
+          {pendingCheck && <Badge tone="warn">교차 검증 중 · 평판 미반영</Badge>}
           {r.status === "REPORTED" && <Badge tone="warn">신고 검토 중</Badge>}
           {r.status === "HIDDEN" && <Badge tone="danger">숨김</Badge>}
         </div>

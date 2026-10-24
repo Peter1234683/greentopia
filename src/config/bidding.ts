@@ -15,6 +15,8 @@ export const BIDDING_DEFAULTS = {
   riskyBuildingAge: 45, // 이 연식 이상 건물이
   riskyBuildingShare: 0.5, // 이 비율 이상이면 하자 위험이 큰 Cluster → 지명경쟁 고려
   restrictedConditions: { minPlatformOrExternalProjects: 10, regionOnly: true, minTechStaff: 3 },
+  // 안심 보장제 참여 항목 1개당 A/S 항목 배점의 이 비율만큼 가산 (상한: A/S 배점)
+  safetyPledgeBonusPerItem: 0.05,
   // 종합평가 배점 (대형)
   weights: { price: 50, record: 20, duration: 10, warranty: 10, reputation: 10 },
   // 소형 Cluster 간이 평가 배점

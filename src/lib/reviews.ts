@@ -3,12 +3,36 @@ import { db } from "./db";
 import { getSettings } from "./settings";
 import { notify } from "./notify";
 import { parseJson } from "./constants";
-import { computeReputation, gradeFor } from "./reputation";
+import { computeReputation, gradeFor, RATING_KEYS } from "./reputation";
+import { notifyAdmins } from "./notify";
+import { reviewFlags } from "./reviewTrust";
+
+// 교차 검증이 끝나지 않았거나 제외 결정된 리뷰는 평판 계산에서 뺀다
+export const TRUSTED_REVIEW = { flags: { none: { OR: [{ resolved: false }, { resolution: "EXCLUDE" }] } } };
+
+const avgOf = (r: Record<string, unknown>) => RATING_KEYS.reduce((a, [, f]) => a + Number(r[f]), 0) / RATING_KEYS.length;
+
+// 새 시공 후기: 같은 묶음 이웃 세대·짧은 기간 몰림을 확인해 플래그를 남긴다
+export async function flagNewReview(reviewId: string) {
+  const r = await db.review.findUnique({ where: { id: reviewId }, include: { project: { include: { contract: { include: { tender: true } } } }, contractor: true } });
+  if (!r || r.kind !== "INITIAL") return [];
+  const s = (await getSettings()).reputation;
+  const clusterId = r.project.contract.tender?.clusterId;
+  const others = await db.review.findMany({
+    where: { contractorId: r.contractorId, kind: "INITIAL", id: { not: r.id }, status: { not: "HIDDEN" } },
+    include: { project: { include: { contract: { include: { tender: true } } } } },
+  });
+  const t = (x: typeof r | (typeof others)[number]) => ({ id: x.id, createdAt: x.createdAt, avg: avgOf(x) });
+  const flags = reviewFlags(t(r), others.filter((o) => clusterId && o.project.contract.tender?.clusterId === clusterId).map(t), others.map(t), s);
+  for (const f of flags) await db.reviewFlag.create({ data: { reviewId: r.id, reason: f.reason, detail: f.detail } });
+  if (flags.length) await notifyAdmins("리뷰 교차 검증 필요", `${r.contractor.companyName} 후기: ${flags.map((f) => f.detail).join(" / ")}`, "/admin/reviews");
+  return flags;
+}
 
 export async function recomputeContractor(contractorId: string, opts: { silent?: boolean } = {}) {
   const s = (await getSettings()).reputation;
   const [reviews, contracts, before] = await Promise.all([
-    db.review.findMany({ where: { contractorId, status: { not: "HIDDEN" } } }),
+    db.review.findMany({ where: { contractorId, status: { not: "HIDDEN" }, ...TRUSTED_REVIEW } }),
     db.contract.findMany({ where: { contractorId, status: "SIGNED" }, include: { project: true } }),
     db.contractorProfile.findUniqueOrThrow({ where: { id: contractorId } }),
   ]);

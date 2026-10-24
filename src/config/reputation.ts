@@ -22,5 +22,7 @@ export const REPUTATION_DEFAULTS = {
   reviewPoints: 3000, // 리뷰 작성 고객 포인트
   followupMonths: [6, 12],
   anomaly: { windowDays: 3, minReviews: 4 }, // 짧은 기간 몰린 리뷰
+  // 리뷰 교차 검증: 같은 묶음·같은 업체 세대들의 평균 별점과 이만큼 차이 나면 "교차 검증 필요" → 운영자 확인 전까지 평판 반영 보류
+  crossCheck: { outlierGap: 1.5, minPeers: 2 },
 };
 export type ReputationSettings = typeof REPUTATION_DEFAULTS;

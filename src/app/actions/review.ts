@@ -7,7 +7,7 @@ import { db } from "@/lib/db";
 import { requireRole, getCurrentUser } from "@/lib/dal";
 import { getSettings } from "@/lib/settings";
 import { notify, notifyAdmins } from "@/lib/notify";
-import { followupDue, recomputeContractor } from "@/lib/reviews";
+import { flagNewReview, followupDue, recomputeContractor } from "@/lib/reviews";
 import { saveUpload, validateUpload } from "@/lib/uploads";
 import { COMPLAINT_TAGS } from "@/lib/constants";
 import { optionalNumber, requiredNumber, type FormState } from "@/lib/forms";
@@ -78,7 +78,7 @@ export async function createReview(_: FormState, formData: FormData): Promise<Fo
     photoIds.push(doc.id);
   }
 
-  await db.review.create({
+  const created = await db.review.create({
     data: {
       projectId: c.project.id,
       authorId: user.id,
@@ -102,6 +102,7 @@ export async function createReview(_: FormState, formData: FormData): Promise<Fo
   const settings = await getSettings();
   if (d.kind === "INITIAL")
     await db.customerProfile.update({ where: { userId: user.id }, data: { points: { increment: settings.reputation.reviewPoints } } });
+  await flagNewReview(created.id);
   await recomputeContractor(c.contractorId);
   await notify([c.contractor.userId], "새 리뷰가 등록됐어요", "내 업체 화면에서 확인하고 답글을 남겨보세요.", "/contractor/company");
   revalidatePath("/", "layout");

@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { parseJson } from "@/lib/constants";
 import type { EligContractor, PQRuleLite } from "./eligibility";
 
-export type ContractorRow = EligContractor & { name: string; grade: string; reputationScore: number | null; userId: string };
+export type ContractorRow = EligContractor & { name: string; grade: string; reputationScore: number | null; userId: string; safetyPledgeItems: number };
 
 export async function loadContractors(where: { id?: string } = {}): Promise<ContractorRow[]> {
   const list = await db.contractorProfile.findMany({
@@ -13,6 +13,7 @@ export async function loadContractors(where: { id?: string } = {}): Promise<Cont
       regions: true,
       reviews: { where: { kind: "INITIAL", status: { not: "HIDDEN" } }, select: { complaintTagsJson: true } },
       contracts: { where: { project: { status: { in: ["COMPLETED", "AS"] } } }, select: { id: true } },
+      safetyPledge: true,
     },
   });
   return list.map((c) => {
@@ -36,6 +37,7 @@ export async function loadContractors(where: { id?: string } = {}): Promise<Cont
       platformProjects: c.contracts.length,
       reviewCount: c.reviews.length,
       tagCounts,
+      safetyPledgeItems: parseJson<string[]>(c.safetyPledge?.itemsJson, []).length,
     };
   });
 }

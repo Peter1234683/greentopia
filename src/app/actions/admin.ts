@@ -174,3 +174,15 @@ export async function simulateMatchingAction(p: SimParams) {
     },
   });
 }
+
+// ── 리뷰 교차 검증 처리 (F11): 반영(INCLUDE) 또는 제외(EXCLUDE) 후 평판 다시 계산 ──
+export async function resolveReviewFlag(formData: FormData) {
+  await requireRole("ADMIN");
+  const resolution = String(formData.get("resolution")) === "EXCLUDE" ? "EXCLUDE" : "INCLUDE";
+  const reviewId = String(formData.get("reviewId") ?? "");
+  const r = await db.review.findUnique({ where: { id: reviewId } });
+  if (!r) return;
+  await db.reviewFlag.updateMany({ where: { reviewId, resolved: false }, data: { resolved: true, resolution, resolvedAt: new Date() } });
+  await recomputeContractor(r.contractorId);
+  revalidatePath("/", "layout");
+}

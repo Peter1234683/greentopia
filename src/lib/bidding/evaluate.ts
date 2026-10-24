@@ -15,7 +15,7 @@ export type EvalBid = {
   asMonths: number;
   dumpingReason: string | null;
 };
-export type EvalContractor = EligContractor & { grade: string; reputationScore: number | null };
+export type EvalContractor = EligContractor & { grade: string; reputationScore: number | null; safetyPledgeItems?: number };
 
 export type EvalResult = {
   bidId: string;
@@ -78,7 +78,8 @@ export function evaluateBids(
     const dumpingPenalty = dumping ? price * s.dumpingPenaltyRate * (b.dumpingReason ? 1 : 2) : 0;
     const record = w.record * Math.min(1, (c.platformProjects + c.externalProjectCount * 0.5) / s.recordFullAt);
     const duration = w.duration * (minDuration / b.durationDays);
-    const warranty = w.warranty * ((b.warrantyMonths + b.asMonths) / maxCare);
+    // A/S 항목: 하자보증+무상 A/S 기간 + 안심 보장제 참여 가산 (A/S 배점 상한)
+    const warranty = Math.min(w.warranty, w.warranty * ((b.warrantyMonths + b.asMonths) / maxCare) + w.warranty * (s.safetyPledgeBonusPerItem ?? 0) * (c.safetyPledgeItems ?? 0));
     const reputation = Math.min(w.reputation, w.reputation * (initialReputation(c, rep) / 100) + (gradeBonus[c.grade] ?? 0));
     const scores = { price: price - dumpingPenalty, record, duration, warranty, reputation };
     const r1 = (n: number) => Math.round(n * 10) / 10;

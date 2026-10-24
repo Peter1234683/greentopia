@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { db } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
 import { pqCandidates, reviewAnomalies } from "@/lib/pqCandidates";
-import { addPQRuleFromCandidate, resolveReport, updatePQRule } from "@/app/actions/admin";
+import { addPQRuleFromCandidate, resolveReport, resolveReviewFlag, updatePQRule } from "@/app/actions/admin";
 import { ReviewCard } from "@/components/ReviewCard";
 import { Badge, Button, Card } from "@/components/ui";
 
@@ -10,7 +10,8 @@ export const metadata: Metadata = { title: "리뷰 · PQ" };
 
 export default async function AdminReviews() {
   const settings = await getSettings();
-  const [reports, candidates, rules, anomalies] = await Promise.all([
+  const [flagged, reports, candidates, rules, anomalies] = await Promise.all([
+    db.review.findMany({ where: { flags: { some: { resolved: false } } }, include: { contractor: true, flags: { where: { resolved: false } } }, orderBy: { createdAt: "desc" } }),
     db.reviewReport.findMany({ where: { status: "OPEN" }, include: { review: { include: { contractor: true } }, reporter: true }, orderBy: { createdAt: "asc" } }),
     pqCandidates(),
     db.pQRule.findMany({ orderBy: { createdAt: "asc" } }),
@@ -20,7 +21,27 @@ export default async function AdminReviews() {
   return (
     <div className="space-y-8">
       <section>
-        <h1 className="mb-3 text-lg font-bold">리뷰 신고 ({reports.length})</h1>
+        <h1 className="mb-1 text-lg font-bold">교차 검증 필요 리뷰 ({flagged.length})</h1>
+        <p className="mb-3 text-sm text-muted">같은 묶음 이웃 세대 평점과 크게 다르거나 짧은 기간에 몰린 후기예요. 확인 전까지 평판 점수에 반영하지 않아요.</p>
+        {flagged.length === 0 && <Card className="text-sm text-muted">확인할 리뷰가 없어요.</Card>}
+        <div className="space-y-3">
+          {flagged.map((r) => (
+            <Card key={r.id} className="p-4">
+              <p className="text-sm font-bold">{r.contractor.companyName}</p>
+              <ul className="mt-1 text-sm text-warn">{r.flags.map((f) => <li key={f.id}>⚠️ {f.detail}</li>)}</ul>
+              <div className="mt-2"><ReviewCard r={r} pendingCheck /></div>
+              <form action={resolveReviewFlag} className="mt-3 flex gap-2">
+                <input type="hidden" name="reviewId" value={r.id} />
+                <Button name="resolution" value="INCLUDE" className="py-2 text-sm">확인 · 평판 반영</Button>
+                <Button name="resolution" value="EXCLUDE" variant="outline" className="py-2 text-sm">평판에서 제외</Button>
+              </form>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <h2 className="mb-3 text-lg font-bold">리뷰 신고 ({reports.length})</h2>
         {reports.length === 0 && <Card className="text-sm text-muted">처리할 신고가 없어요.</Card>}
         <div className="space-y-3">
           {reports.map((rp) => (

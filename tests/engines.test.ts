@@ -196,3 +196,53 @@ test("진행바: 입찰 구간이 있으면 그 경계, 없으면 가정 구간(
   assert.equal(b.nextDiscount, null);
   assert.equal(tierProgress(9, null, cfg).next, null);
 });
+
+import { reviewFlags } from "../src/lib/reviewTrust";
+test("리뷰 교차 검증: 이웃 세대와 크게 다른 별점 · 짧은 기간 몰림", () => {
+  const t = (id: string, avg: number, day: number) => ({ id, avg, createdAt: new Date(2026, 0, day) });
+  const peers = [t("a", 4.6, 1), t("b", 4.4, 2)];
+  assert.deepEqual(reviewFlags(t("x", 1.5, 20), peers, [], REPUTATION_DEFAULTS).map((f) => f.reason), ["CLUSTER_OUTLIER"]);
+  assert.equal(reviewFlags(t("x", 4.2, 20), peers, [], REPUTATION_DEFAULTS).length, 0);
+  assert.equal(reviewFlags(t("x", 1.5, 20), [peers[0]], [], REPUTATION_DEFAULTS).length, 0, "비교 세대가 적으면 판단 안 함");
+  const burst = [t("p", 5, 19), t("q", 5, 20), t("r", 5, 21)];
+  assert.deepEqual(reviewFlags(t("x", 5, 20), [], burst, REPUTATION_DEFAULTS).map((f) => f.reason), ["BURST"]);
+});
+
+import { tagStats } from "../src/lib/reviewTrust";
+test("불만 태그 비율 · 사후 해결률", () => {
+  const rs = [
+    { projectId: "p1", kind: "INITIAL", tags: ["DELAY"], replied: true, defectOccurred: null, defectResolved: null },
+    { projectId: "p1", kind: "FOLLOWUP_6M", tags: [], replied: false, defectOccurred: true, defectResolved: true },
+    { projectId: "p2", kind: "INITIAL", tags: ["DELAY", "NOISE_DUST"], replied: false, defectOccurred: null, defectResolved: null },
+    { projectId: "p3", kind: "INITIAL", tags: [], replied: false, defectOccurred: null, defectResolved: null },
+  ];
+  const s = tagStats(rs);
+  const delay = s.find((x) => x.tag === "DELAY")!;
+  assert.equal(delay.count, 2);
+  assert.ok(Math.abs(delay.ratio - 2 / 3) < 1e-9);
+  assert.equal(delay.resolved, 1);
+  assert.equal(s.find((x) => x.tag === "NOISE_DUST")!.resolvedRate, 0);
+});
+
+import { demandInsights } from "../src/lib/insights";
+test("권역 수요 인사이트: 공종별 수요 · Top 3 동네 · 건물 유형 분포", () => {
+  const d = (dong: string, trades: string[], structure = "BRICK", age = 35) => ({ trades, sigungu: "남구", dong, usage: "MULTI_HOUSEHOLD", structure, age });
+  const r = demandInsights([d("대명동", ["WINDOW"]), d("대명동", ["WINDOW"]), d("봉덕동", ["WINDOW"], "RC", 20), d("이천동", ["BOILER"])], ["WINDOW"]);
+  assert.equal(r.total, 3);
+  assert.equal(r.byTrade.WINDOW, 3);
+  assert.deepEqual(r.topDongs[0], { name: "남구 대명동", count: 2 });
+  assert.equal(r.types[0].label, "30년 이상 조적조");
+});
+
+test("안심 보장제: 참여 항목만큼 A/S 점수 가산, A/S 배점 상한", () => {
+  const cs = new Map([["a", { ...base, id: "a" }], ["b", { ...base, id: "b", safetyPledgeItems: 3 }]]);
+  const bid = (id: string, care: number) => ({ id, contractorId: id, totalPrice: 100e6, durationDays: 30, warrantyMonths: care, asMonths: 12, dumpingReason: null });
+  const r = evaluateBids([bid("a", 24), bid("b", 12)], cs as never, { ...tender, priceCap: 120e6, estimatedAmount: 400e6 }, rules as never, BIDDING_DEFAULTS, REPUTATION_DEFAULTS, {});
+  const a = r.results.find((x) => x.bidId === "a")!.scores.warranty;
+  const b = r.results.find((x) => x.bidId === "b")!.scores.warranty;
+  const w = BIDDING_DEFAULTS.weights.warranty;
+  assert.equal(a, w);
+  assert.ok(Math.abs(b - Math.min(w, w * (24 / 36) + w * 0.05 * 3)) < 0.06);
+  const r2 = evaluateBids([bid("a", 24), bid("b", 24)], cs as never, { ...tender, priceCap: 120e6, estimatedAmount: 400e6 }, rules as never, BIDDING_DEFAULTS, REPUTATION_DEFAULTS, {});
+  assert.equal(r2.results.find((x) => x.bidId === "b")!.scores.warranty, w, "상한");
+});
