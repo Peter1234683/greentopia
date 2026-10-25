@@ -1,0 +1,1085 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>그린토피아 파트너</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Roboto+Mono:wght@500;700&display=swap">
+<style>
+  /* 레이아웃: 390px 현장용 단일 컬럼 · 상단 고정 바 + 하단 고정 CTA/탭바 · 상태는 색으로 구분 */
+  :root{
+    --green:#0B4A35; --green-700:#093C2B; --green-50:#E4EFEA; --mint:#8FD3B0; --mint-50:#E6F5EE; --mint-100:#C9E8D9;
+    --bg:#F2F4F3; --card:#FFFFFF; --line:#D5DEDA; --line-2:#C2CFC9;
+    --ink:#0F1F19; --ink-2:#36483F; --ink-3:#55675E;
+    --urgent:#E07A3F; --urgent-50:#FCEFE6; --urgent-ink:#9C440F;
+    --gray:#E7ECE9; --gray-ink:#4A5A53;
+    --radius:14px; --shadow:0 1px 2px rgba(10,50,36,.07), 0 4px 14px rgba(10,50,36,.05);
+    --font-body:'Noto Sans KR', system-ui, -apple-system, 'Malgun Gothic', sans-serif;
+    --font-num:'Roboto Mono', ui-monospace, Consolas, monospace;
+    color-scheme: light;
+  }
+  html{ font-size:17px; }
+  html, body{ background:var(--bg); }
+  body{ margin:0; font-family:var(--font-body); color:var(--ink); font-size:1rem; line-height:1.55; -webkit-text-size-adjust:100%; }
+  body::before{ content:""; position:fixed; inset:0 0 auto; height:env(safe-area-inset-top,0px); z-index:30; background:var(--green-700); }
+  *{ box-sizing:border-box; }
+  button{ font-family:inherit; font-size:inherit; color:inherit; cursor:pointer; border:0; background:none; }
+  input, textarea, select{ font-family:inherit; font-size:1.0625rem; color:var(--ink); }
+  :focus-visible{ outline:3px solid var(--green); outline-offset:2px; border-radius:8px; }
+  @media (prefers-reduced-motion: reduce){ *{ animation:none !important; transition:none !important; } }
+
+  .app{ max-width:390px; margin:0 auto; min-height:100vh; }
+  .hdr{
+    position:sticky; top:env(safe-area-inset-top,0px); z-index:20; background:var(--green-700); color:#fff;
+    display:flex; align-items:center; gap:.5rem; padding-block:.65rem;
+    padding-left:max(16px, env(safe-area-inset-left,0px)); padding-right:max(16px, env(safe-area-inset-right,0px));
+  }
+  .hdr .brand{ font-weight:900; font-size:1.0625rem; letter-spacing:-.02em; }
+  .hdr .tag{ background:var(--mint); color:var(--green-700); font-size:.75rem; font-weight:900; padding:.1rem .45rem; border-radius:6px; letter-spacing:.02em; }
+  .hdr .ttl{ font-weight:700; font-size:1.0625rem; }
+  .hdr .sp{ margin-left:auto; }
+  .hdr .cert{ display:flex; align-items:center; gap:.25rem; background:rgba(143,211,176,.2); border:1px solid rgba(143,211,176,.5); color:var(--mint); font-size:.75rem; font-weight:700; padding:.2rem .5rem; border-radius:999px; }
+  .iconbtn{ width:2.6rem; height:2.6rem; display:grid; place-items:center; border-radius:10px; background:rgba(255,255,255,.12); color:#fff; flex:0 0 auto; }
+
+  .scroll{ padding-left:max(16px, env(safe-area-inset-left,0px)); padding-right:max(16px, env(safe-area-inset-right,0px)); padding-block:1rem 11rem; }
+  .foot{ position:fixed; left:0; right:0; bottom:0; z-index:25; display:flex; justify-content:center; pointer-events:none;
+    background:linear-gradient(to top, var(--bg) 62%, rgba(242,244,243,0)); }
+  .foot-in{ width:100%; max-width:390px; pointer-events:auto;
+    padding-left:max(16px, env(safe-area-inset-left,0px)); padding-right:max(16px, env(safe-area-inset-right,0px));
+    padding-top:.7rem; padding-bottom:calc(.65rem + env(safe-area-inset-bottom,0px)); }
+  .tabbar{ display:flex; background:var(--card); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow); margin-top:.55rem; overflow:hidden; }
+  .tabbar button{ flex:1; display:grid; justify-items:center; gap:.1rem; padding:.5rem .2rem; color:var(--ink-3); font-size:.8125rem; font-weight:700; min-height:3.5rem; }
+  .tabbar button[aria-current="page"]{ color:var(--green); background:var(--green-50); }
+
+  .cta{ width:100%; min-height:3.5rem; border-radius:12px; background:var(--green); color:#fff; font-size:1.125rem; font-weight:700;
+    display:flex; align-items:center; justify-content:center; gap:.4rem; box-shadow:0 3px 12px rgba(11,74,53,.25); cursor:pointer; }
+  .cta:disabled{ background:#B9C6C0; box-shadow:none; cursor:default; }
+  .cta.ghost{ background:var(--card); color:var(--green); border:2px solid var(--green); box-shadow:none; }
+  .cta.sm{ min-height:3rem; font-size:1rem; border-radius:10px; }
+  .card{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:1rem; }
+  .stack > * + *{ margin-top:.75rem; }
+  h1{ font-size:1.5rem; margin:.1rem 0 .4rem; letter-spacing:-.02em; text-wrap:balance; }
+  h2{ font-size:1.25rem; margin:0 0 .4rem; letter-spacing:-.02em; text-wrap:balance; }
+  h3{ font-size:1.0625rem; margin:0 0 .3rem; }
+  p{ margin:0 0 .4rem; }
+  .sub{ color:var(--ink-2); font-size:1rem; }
+  .small{ color:var(--ink-3); font-size:.875rem; line-height:1.5; }
+  .num{ font-family:var(--font-num); font-weight:700; font-variant-numeric:tabular-nums; }
+  .big{ font-size:1.75rem; font-weight:900; letter-spacing:-.03em; font-variant-numeric:tabular-nums; line-height:1.2; }
+  .ai{ display:inline-flex; align-items:center; gap:.2rem; background:var(--mint-50); color:var(--green); border:1px solid var(--mint-100);
+    border-radius:6px; padding:.1rem .4rem; font-size:.75rem; font-weight:900; white-space:nowrap; }
+  .ai::before{ content:"✦"; }
+  .st{ display:inline-flex; align-items:center; gap:.25rem; border-radius:6px; padding:.15rem .5rem; font-size:.8125rem; font-weight:900; white-space:nowrap; }
+  .st.open{ background:var(--mint-50); color:var(--green); border:1px solid var(--mint-100); }
+  .st.bid{ background:var(--gray); color:var(--gray-ink); border:1px solid var(--line-2); }
+  .st.won{ background:var(--green); color:#fff; border:1px solid var(--green); }
+  .st.urgent{ background:var(--urgent-50); color:var(--urgent-ink); border:1px solid #F0CFB4; }
+  .rows{ display:grid; gap:.4rem; }
+  .row{ display:flex; gap:.75rem; justify-content:space-between; align-items:baseline; }
+  .row dt{ color:var(--ink-3); font-size:.9375rem; }
+  .row dd{ margin:0; font-weight:700; font-variant-numeric:tabular-nums; text-align:right; }
+  .divider{ height:1px; background:var(--line); border:0; margin:.8rem 0; }
+  .chips{ display:flex; flex-wrap:wrap; gap:.45rem; }
+  .chip{ min-height:2.9rem; padding:.45rem .85rem; border-radius:10px; border:2px solid var(--line); background:var(--card); color:var(--ink-2); font-size:1rem; font-weight:700; }
+  .chip[aria-pressed="true"]{ border-color:var(--green); background:var(--green); color:#fff; }
+  .chip.sm{ min-height:2.4rem; padding:.25rem .7rem; font-size:.9375rem; border-width:1.5px; }
+  .seg{ display:flex; background:var(--card); border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+  .seg button{ flex:1; min-height:2.9rem; font-size:.9375rem; font-weight:700; color:var(--ink-3); }
+  .seg button[aria-pressed="true"]{ background:var(--green); color:#fff; }
+  .steps{ display:flex; align-items:center; gap:.55rem; margin-bottom:.8rem; }
+  .steps .track{ flex:1; height:.45rem; border-radius:999px; background:var(--mint-100); overflow:hidden; }
+  .steps .fill{ height:100%; background:var(--green); border-radius:999px; transition:width .3s ease; }
+  .steps b{ font-family:var(--font-num); font-size:.9375rem; color:var(--green); white-space:nowrap; }
+  .field label{ display:block; font-weight:700; margin-bottom:.35rem; font-size:1rem; }
+  .field input, .field textarea{ width:100%; min-height:3.25rem; border:2px solid var(--line); border-radius:10px; background:#fff; padding:.65rem .8rem; }
+  .field textarea{ min-height:4.5rem; resize:vertical; }
+  .field + .field{ margin-top:.8rem; }
+  .inline{ display:flex; gap:.5rem; }
+  .inline .cta{ width:auto; flex:0 0 auto; padding:0 1rem; font-size:1rem; }
+  .note{ background:var(--urgent-50); border:1px solid #F0CFB4; color:var(--urgent-ink); border-radius:12px; padding:.75rem .85rem; font-size:.9375rem; }
+  .info{ background:var(--mint-50); border:1px solid var(--mint-100); color:var(--green); border-radius:12px; padding:.75rem .85rem; font-size:.9375rem; }
+  .plain{ background:var(--green-50); border:1px solid var(--mint-100); border-radius:12px; padding:.75rem .85rem; font-size:.9375rem; color:var(--ink-2); }
+  .sum3{ display:grid; grid-template-columns:repeat(3,1fr); gap:.5rem; }
+  .sum3 .s{ background:var(--card); border:1px solid var(--line); border-radius:12px; padding:.6rem .4rem; text-align:center; box-shadow:var(--shadow); }
+  .sum3 .s b{ display:block; font-family:var(--font-num); font-size:1.5rem; font-weight:700; line-height:1.2; }
+  .sum3 .s span{ font-size:.8125rem; color:var(--ink-3); font-weight:700; }
+  .sum3 .s.on b{ color:var(--green); }
+  .clcard{ width:100%; text-align:left; background:var(--card); border:1px solid var(--line); border-left:5px solid var(--mint); border-radius:var(--radius); padding:.95rem 1rem; box-shadow:var(--shadow); }
+  .clcard + .clcard{ margin-top:.7rem; }
+  .clcard.urgent{ border-left-color:var(--urgent); }
+  .clcard.bid{ border-left-color:var(--line-2); background:#FAFBFA; }
+  .clcard.won{ border-left-color:var(--green); }
+  .clcard .hd{ display:flex; align-items:center; gap:.4rem; flex-wrap:wrap; margin-bottom:.3rem; }
+  .clcard .no{ font-family:var(--font-num); font-weight:700; color:var(--green); font-size:.9375rem; }
+  .clcard .nm{ font-size:1.1875rem; font-weight:900; letter-spacing:-.02em; }
+  .facts{ display:flex; flex-wrap:wrap; gap:.3rem .8rem; margin-top:.4rem; font-size:.9375rem; color:var(--ink-2); }
+  .facts b{ font-variant-numeric:tabular-nums; }
+  .cd{ display:flex; align-items:center; justify-content:space-between; gap:.5rem; margin-top:.6rem; padding-top:.55rem; border-top:1px dashed var(--line); }
+  .cd .left{ font-size:.9375rem; color:var(--ink-3); }
+  .map{ border-radius:12px; overflow:hidden; border:1px solid var(--line); background:#E9EFEC; }
+  .map svg{ display:block; width:100%; height:auto; }
+  .legend{ display:flex; flex-wrap:wrap; gap:.6rem; margin-top:.45rem; font-size:.8125rem; color:var(--ink-2); }
+  .legend i{ width:.7rem; height:.7rem; border-radius:50%; display:inline-block; margin-right:.25rem; vertical-align:-1px; }
+  table.t{ width:100%; border-collapse:collapse; font-size:.9375rem; }
+  table.t th, table.t td{ padding:.5rem .35rem; border-bottom:1px solid var(--line); text-align:right; }
+  table.t th:first-child, table.t td:first-child{ text-align:left; }
+  table.t th{ color:var(--ink-3); font-size:.8125rem; font-weight:700; }
+  table.t td{ font-variant-numeric:tabular-nums; }
+  table.t tfoot td{ font-weight:900; border-bottom:0; border-top:2px solid var(--green); color:var(--green); }
+  .keypad{ display:grid; grid-template-columns:repeat(3,1fr); gap:.45rem; margin-top:.7rem; }
+  .keypad button{ min-height:3.4rem; border-radius:10px; background:#fff; border:1.5px solid var(--line); font-family:var(--font-num); font-size:1.375rem; font-weight:700; }
+  .keypad button.act{ background:var(--green-50); color:var(--green); font-family:var(--font-body); font-size:1rem; }
+  .amt{ background:var(--green-700); color:#fff; border-radius:12px; padding:.85rem 1rem; }
+  .amt .v{ font-size:1.75rem; font-weight:900; letter-spacing:-.02em; font-variant-numeric:tabular-nums; }
+  .amt .u{ font-size:.875rem; color:var(--mint); font-weight:700; }
+  .prev{ background:#fff; border:2px solid var(--green); border-radius:12px; padding:.9rem; }
+  .prev .nm{ font-size:1.1875rem; font-weight:900; }
+  .meta{ display:grid; grid-template-columns:1fr 1fr; gap:.3rem .6rem; margin-top:.5rem; font-size:.9375rem; color:var(--ink-2); }
+  .bstep{ display:flex; align-items:center; gap:.25rem; margin-top:.5rem; }
+  .bstep i{ flex:1; height:.4rem; border-radius:999px; background:var(--line); }
+  .bstep i.on{ background:var(--mint); }
+  .bstep i.now{ background:var(--green); }
+  .bgrid{ display:grid; grid-template-columns:1fr 1fr; gap:.6rem; }
+  .bcard{ text-align:left; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:.7rem .75rem; box-shadow:var(--shadow); }
+  .bcard .t{ font-weight:900; font-size:1rem; }
+  .bcard .s{ font-size:.8125rem; color:var(--ink-3); }
+  .bcard.done{ border-color:var(--green); background:var(--green-50); }
+  .srow{ display:flex; align-items:center; gap:.6rem; background:#fff; border:1px solid var(--line); border-radius:10px; padding:.55rem .6rem; touch-action:none; }
+  .srow + .srow{ margin-top:.4rem; }
+  .srow.drag{ box-shadow:0 8px 22px rgba(10,50,36,.22); border-color:var(--green); position:relative; z-index:5; }
+  .srow .h{ width:2.2rem; height:2.6rem; display:grid; place-items:center; color:var(--ink-3); cursor:grab; flex:0 0 auto; }
+  .srow .d{ font-family:var(--font-num); font-size:.875rem; color:var(--green); font-weight:700; min-width:4.6rem; }
+  .srow .b{ font-weight:700; flex:1; min-width:0; }
+  .srow .ar{ display:flex; flex-direction:column; gap:.15rem; }
+  .srow .ar button{ width:2.2rem; height:1.5rem; border:1px solid var(--line); border-radius:6px; font-size:.75rem; color:var(--ink-3); background:#fff; }
+  .chk{ display:flex; align-items:center; gap:.7rem; width:100%; text-align:left; background:#fff; border:2px solid var(--line); border-radius:12px; padding:.7rem .8rem; min-height:3.5rem; }
+  .chk.done{ border-color:var(--green); background:var(--green-50); }
+  .chk .bx{ width:1.6rem; height:1.6rem; border-radius:6px; border:2px solid var(--line-2); background:#fff; display:grid; place-items:center; color:#fff; font-weight:900; flex:0 0 auto; }
+  .chk.done .bx{ background:var(--green); border-color:var(--green); }
+  .chk .tx{ flex:1; min-width:0; }
+  .chk .tx b{ display:block; font-size:1rem; }
+  .chk .tx span{ display:block; font-size:.8125rem; color:var(--ink-3); }
+  .chk .cam{ background:var(--green-50); color:var(--green); border-radius:8px; padding:.3rem .55rem; font-size:.875rem; font-weight:900; }
+  .two{ display:grid; grid-template-columns:1fr 1fr; gap:.5rem; }
+  .stars{ color:#E8A020; font-weight:700; font-variant-numeric:tabular-nums; }
+  .photos{ display:grid; grid-template-columns:repeat(3,1fr); gap:.4rem; }
+  .ph{ border-radius:10px; overflow:hidden; border:1px solid var(--line); background:var(--green-50); }
+  .ph svg{ display:block; width:100%; height:auto; }
+  .toast{ position:fixed; left:50%; transform:translateX(-50%); bottom:calc(8.2rem + env(safe-area-inset-bottom,0px)); background:var(--ink); color:#fff;
+    padding:.7rem 1rem; border-radius:999px; font-size:.9375rem; font-weight:700; z-index:40; box-shadow:0 8px 24px rgba(0,0,0,.25); max-width:min(340px,88vw); text-align:center; }
+  .fade{ animation:fi .3s ease both; }
+  @keyframes fi{ from{ opacity:0; transform:translateY(5px);} to{ opacity:1; transform:none;} }
+  .spin{ width:1.1rem; height:1.1rem; border-radius:50%; border:3px solid var(--mint-100); border-top-color:var(--green); animation:sp .8s linear infinite; display:inline-block; vertical-align:-3px; }
+  @keyframes sp{ to{ transform:rotate(360deg);} }
+  input[type=range]{ width:100%; accent-color:var(--green); height:2.4rem; }
+  .sr{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+</style>
+
+<div class="app">
+  <header class="hdr" id="hdr"></header>
+  <main class="scroll" id="screen" tabindex="-1"></main>
+  <div class="foot"><div class="foot-in" id="foot"></div></div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var NOW = Date.now();
+  var DAY = 86400000;
+
+  /* ───────── 목업 데이터 (건물주 앱과 동일 수치) ───────── */
+  var ME = { name:'B업체', rate:4.7, works:35, asRate:98, as:3, qty:150 };
+  var TRADES = ['고성능 창호','외단열','내단열','고효율 보일러','환기장치','태양광','LED 조명'];
+  var RADIUS = ['5km','10km','20km','시 전체'];
+
+  var BUILDINGS = [
+    { id:1, area:'○○동', use:'단독주택',   fl:3, qty:10, days:2, addr:'○○동 12-3',  tel:'010-0000-0001' },
+    { id:2, area:'○○동', use:'다가구주택', fl:3, qty:12, days:2, addr:'○○동 18-7',  tel:'010-0000-0002' },
+    { id:3, area:'△△동', use:'다세대주택', fl:4, qty:14, days:3, addr:'△△동 4-11',  tel:'010-0000-0003' },
+    { id:4, area:'△△동', use:'단독주택',   fl:2, qty:8,  days:1, addr:'△△동 9-2',   tel:'010-0000-0004' },
+    { id:5, area:'○○동', use:'다가구주택', fl:3, qty:11, days:2, addr:'○○동 21-5',  tel:'010-0000-0005' },
+    { id:6, area:'□□동', use:'단독주택',   fl:2, qty:7,  days:1, addr:'□□동 7-14',  tel:'010-0000-0006' },
+    { id:7, area:'△△동', use:'다세대주택', fl:4, qty:13, days:2, addr:'△△동 16-8',  tel:'010-0000-0007' },
+    { id:8, area:'□□동', use:'단독주택',   fl:2, qty:6,  days:1, addr:'□□동 3-6',   tel:'010-0000-0008' },
+    { id:9, area:'○○동', use:'다가구주택', fl:3, qty:6,  days:2, addr:'○○동 25-1',  tel:'010-0000-0009' }
+  ];
+  var TOTAL_QTY = 87;
+  var ROUTE = [3,5,1,2,8,4,7,9,6];
+  var ROUTE_KM = '4.1km';
+  var PT = { 1:[150,104], 2:[206,70], 3:[96,58], 4:[240,128], 5:[120,74], 6:[72,142], 7:[196,150], 8:[252,56], 9:[132,166] };
+
+  var CLUSTERS = [
+    { no:12, trade:'창호', name:'고성능 창호 공동교체', n:9,  qty:'총 87개',   qtyNum:87,  dist:'1.2km', when:'10~11월', due:NOW+3*DAY-3600000, state:'open', ai:true },
+    { no:15, trade:'보일러', name:'고효율 보일러 공동교체', n:5, qty:'5대',    qtyNum:5,   dist:'1.0km', when:'11월 중', due:NOW+5*DAY, state:'open', ai:false },
+    { no:18, trade:'단열', name:'외벽 단열 보강', n:6,        qty:'약 820㎡', qtyNum:820, dist:'1.1km', when:'내년 3월', due:NOW+7*DAY, state:'open', ai:false },
+    { no:9,  trade:'창호', name:'고성능 창호 교체', n:6,      qty:'총 54개',  qtyNum:54,  dist:'1.6km', when:'11~12월', due:NOW+1*DAY, state:'bid', ai:false }
+  ];
+  var ONGOING = [
+    { no:7, name:'외벽 단열 보강', n:4, done:3, stage:'시공 중', note:'4동 중 3동 완료' },
+    { no:3, name:'고성능 창호 교체', n:7, done:7, stage:'완료 확인 대기', note:'건물주 확인 2동 남음' }
+  ];
+  var REVIEWS = [
+    { s:5.0, w:'○○동 건물주', t:'창문 닫으면 바깥 소리가 확 줄었어요.' },
+    { s:4.5, w:'□□동 건물주', t:'A/S 기간이 길어서 마음이 놓입니다.' },
+    { s:5.0, w:'△△동 건물주', t:'작업 전후 사진을 보내줘서 믿음이 갔어요.' },
+    { s:4.5, w:'○○동 건물주', t:'일정이 하루 밀렸지만 미리 연락 주셨어요.' }
+  ];
+  var AS_REQS = [
+    { id:1, b:'△△동 건물 3', t:'창문 잠금장치가 뻑뻑해요', d:'어제 접수', state:'new' },
+    { id:2, b:'○○동 건물 1', t:'창틀 실리콘 일부 들뜸', d:'3일 전 접수', state:'new' }
+  ];
+  var SETTLE = [
+    { b:'건물 3', amount:2380, down:'입금', rest:'대기' },
+    { b:'건물 5', amount:1870, down:'입금', rest:'대기' },
+    { b:'건물 1', amount:1700, down:'대기', rest:'대기' }
+  ];
+  var DATES = ['10/28(화)','10/29(수)','10/30(목)','10/31(금)','11/3(월)'];
+
+  /* ───────── 상태 ───────── */
+  var S = {
+    view:'p0', tab:'bid', step:1,
+    biz:'', bizOk:false, bizLoading:false,
+    gr:'', grPhoto:false,
+    trades:['고성능 창호'], radius:1, qty:'150', as:3,
+    workPhotos:0, totalWorks:'35',
+    reviewing:false, certified:false,
+    filter:'전체', sort:'마감 임박순',
+    cl:null,
+    amount:'', days:'16', bidAs:3, teams:'2팀', dates:[], memo:'',
+    keypad:true, submitted:false, resultSeen:false, won:false,
+    workCl:null, bld:null,
+    stages:{}, checks:{},
+    order:ROUTE.slice(),
+    editInfo:false
+  };
+  BUILDINGS.forEach(function(b){ S.stages[b.id]=0; S.checks[b.id]={before:false,after:false,cert:false}; });
+
+  /* ───────── 유틸 ───────── */
+  function won(man){
+    if(man>=10000){ var e=Math.floor(man/10000), r=man%10000; return r? e+'억 '+r.toLocaleString('ko-KR')+'만 원' : e+'억 원'; }
+    return man.toLocaleString('ko-KR')+'만 원';
+  }
+  function dleft(due){
+    var ms=due-Date.now(); if(ms<0) ms=0;
+    return { d:Math.ceil(ms/DAY), h:Math.floor(ms/3600000) };
+  }
+  function ddText(due){
+    var x=dleft(due);
+    return '<span class="num">D-'+x.d+'</span> · 남은 시간 <span class="num">'+x.h+'시간</span>';
+  }
+  function urgent(due){ return dleft(due).d<=3; }
+  function CL(no){ for(var i=0;i<CLUSTERS.length;i++){ if(CLUSTERS[i].no===no) return CLUSTERS[i]; } return null; }
+  function B(id){ for(var i=0;i<BUILDINGS.length;i++){ if(BUILDINGS[i].id===id) return BUILDINGS[i]; } return null; }
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function amtMan(){ var n=parseInt(S.amount||'0',10); return isNaN(n)?0:n; }
+  function perUnit(){ var a=amtMan(); return a? Math.round(a/TOTAL_QTY) : 0; }
+  function doneCount(){ var c=0; BUILDINGS.forEach(function(b){ if(S.stages[b.id]>=3) c++; }); return c; }
+  function toast(m){
+    var o=document.querySelector('.toast'); if(o) o.remove();
+    var el=document.createElement('div'); el.className='toast'; el.setAttribute('role','status'); el.textContent=m;
+    document.body.appendChild(el); setTimeout(function(){ if(el.parentNode) el.remove(); }, 2200);
+  }
+  function ico(n){
+    var p={
+      gavel:'M4 20h10M6 13l6-6M9 4l7 7-3 3-7-7zM14 12l5 5',
+      clip:'M9 4h6v3H9zM7 6H5v15h14V6h-2M9 12h6M9 16h4',
+      shop:'M4 9h16l-1-5H5L4 9zm0 0v11h16V9M9 20v-6h6v6',
+      back:'M15 5l-7 7 7 7', cam:'M4 8h3l2-2h6l2 2h3v12H4zM12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z',
+      tel:'M6 3h4l2 5-2.5 1.5a12 12 0 0 0 5 5L16 12l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 4 5a2 2 0 0 1 2-2Z',
+      nav:'M3 11l18-8-8 18-2-8-8-2Z', chk:'M5 13l4 4 10-11', pin:'M12 21s7-6.5 7-11a7 7 0 1 0-14 0c0 4.5 7 11 7 11Zm0-8.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z'
+    };
+    return '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="'+p[n]+'"/></svg>';
+  }
+  function photoSvg(k){
+    var sky=['#CFE3DA','#DCE9E3','#C9DED5','#D7E6DF','#CBE0D7'][k%5];
+    return '<svg viewBox="0 0 120 120" role="img" aria-label="시공 예시 이미지"><rect width="120" height="120" fill="'+sky+'"/>'+
+      '<rect x="20" y="22" width="80" height="76" rx="3" fill="#F2F4F3" stroke="#0B4A35" stroke-width="5"/>'+
+      '<path d="M60 22v76M20 60h80" stroke="#0B4A35" stroke-width="5"/>'+
+      '<rect x="27" y="29" width="26" height="24" fill="#E4EFEA"/><rect x="67" y="29" width="26" height="24" fill="'+(k%2?'#8FD3B0':'#E4EFEA')+'"/>'+
+      '<rect x="27" y="67" width="26" height="24" fill="#E4EFEA"/><rect x="67" y="67" width="26" height="24" fill="#E4EFEA"/></svg>';
+  }
+
+  /* 지도: 활동 반경 + Cluster 위치 */
+  function areaMap(){
+    var dots='';
+    [[150,100,'#0B4A35',''],[118,74,'#8FD3B0','12'],[214,132,'#8FD3B0','15'],[92,140,'#8FD3B0','18'],[236,62,'#C2CFC9','9']].forEach(function(p){
+      dots+='<circle cx="'+p[0]+'" cy="'+p[1]+'" r="'+(p[3]?13:9)+'" fill="'+p[2]+'" stroke="#0B4A35" stroke-width="2"/>'+
+        (p[3]?'<text x="'+p[0]+'" y="'+(p[1]+4)+'" font-size="10" font-weight="700" fill="#0B4A35" text-anchor="middle">'+p[3]+'</text>':'');
+    });
+    return '<svg viewBox="0 0 300 190" role="img" aria-label="우리 업체 위치와 활동 반경 안의 공동공사 위치">'+
+      '<rect width="300" height="190" fill="#E9EFEC"/><path d="M0 62h300M0 128h300M96 0v190M214 0v190" stroke="#D5DEDA" stroke-width="6"/>'+
+      '<circle cx="150" cy="100" r="80" fill="#8FD3B0" fill-opacity=".14" stroke="#0B4A35" stroke-width="2" stroke-dasharray="7 6"/>'+
+      dots+
+      '<text x="150" y="20" font-size="11" font-weight="700" fill="#0B4A35" text-anchor="middle">우리 업체 기준 '+RADIUS[S.radius]+'</text></svg>';
+  }
+  /* 지도: AI 추천 동선 */
+  function routeMap(){
+    var pts=S.order.map(function(id){ return PT[id]; });
+    var d=pts.map(function(p,i){ return (i?'L':'M')+p[0]+' '+p[1]; }).join(' ');
+    var dots='';
+    S.order.forEach(function(id,i){
+      var p=PT[id];
+      dots+='<circle cx="'+p[0]+'" cy="'+p[1]+'" r="13" fill="'+(i===0?'#0B4A35':'#8FD3B0')+'" stroke="#0B4A35" stroke-width="2"/>'+
+        '<text x="'+p[0]+'" y="'+(p[1]+4)+'" font-size="11" font-weight="700" fill="'+(i===0?'#fff':'#0B4A35')+'" text-anchor="middle">'+id+'</text>';
+    });
+    return '<svg viewBox="0 0 300 200" role="img" aria-label="추천 시공 순서로 연결한 9개 건물 동선">'+
+      '<rect width="300" height="200" fill="#E9EFEC"/><path d="M0 66h300M0 136h300M96 0v200M214 0v200" stroke="#D5DEDA" stroke-width="6"/>'+
+      '<path d="'+d+'" fill="none" stroke="#0B4A35" stroke-width="3" stroke-dasharray="6 5" stroke-linecap="round" stroke-linejoin="round"/>'+
+      dots+'</svg>';
+  }
+
+  function schedule(){
+    var out=[], day=1;
+    S.order.forEach(function(id){
+      var b=B(id);
+      var to=day+b.days-1;
+      out.push({ id:id, from:day, to:to, label:(day===to? day+'일차' : day+'~'+to+'일차') });
+      day=to+1;
+    });
+    return out;
+  }
+
+  /* ───────── 화면 ───────── */
+  function screen(){
+    if(S.view==='p0') return scReg();
+    if(S.view==='review') return scReview();
+    if(S.view==='cluster') return scCluster();
+    if(S.view==='bidform') return scBidForm();
+    if(S.view==='submitted') return scSubmitted();
+    if(S.view==='result') return scResult();
+    if(S.view==='work') return scWorkDetail();
+    if(S.view==='bld') return scBuilding();
+    if(S.view==='tab'){
+      if(S.tab==='bid') return scBidHome();
+      if(S.tab==='work') return scWorkList();
+      return scInfo();
+    }
+    return scReg();
+  }
+
+  /* P0 등록·인증 */
+  function scReg(){
+    var n=S.step, body='', cta=null;
+    var bar='<div class="steps" role="group" aria-label="등록 '+n+'/4단계"><b>'+n+'/4</b><div class="track"><div class="fill" style="width:'+(n/4*100)+'%"></div></div></div>';
+
+    if(n===1){
+      body=bar+'<h1>사업자 정보를 확인할게요</h1>'+
+        '<p class="sub">사업자등록번호만 넣으면 국세청 정보로 상호를 불러와요.</p>'+
+        '<div class="card" style="margin-top:.8rem"><div class="field"><label for="biz">사업자등록번호</label>'+
+        '<div class="inline"><input id="biz" data-inp="biz" inputmode="numeric" placeholder="000-00-00000" value="'+esc(S.biz)+'">'+
+        '<button class="cta" data-act="bizchk">확인</button></div></div>'+
+        (S.bizLoading?'<div class="info" style="margin-top:.8rem"><span class="spin"></span> 사업자 정보를 확인하고 있어요…</div>':'')+
+        (S.bizOk?'<div class="fade" style="margin-top:.8rem"><div class="info" style="font-weight:700">사업자 정보를 불러왔어요 ✓</div>'+
+          '<dl class="rows" style="margin-top:.7rem">'+
+          '<div class="row"><dt>상호</dt><dd>B업체</dd></div>'+
+          '<div class="row"><dt>대표자</dt><dd>○○○ (비공개)</dd></div>'+
+          '<div class="row"><dt>업태 / 종목</dt><dd>건설업 / 창호·유리공사</dd></div>'+
+          '<div class="row"><dt>개업일</dt><dd>2014-03-11</dd></div></dl></div>':'')+
+        '</div>';
+      cta={ l:'다음', a:'next', off:!S.bizOk };
+    }
+    if(n===2){
+      body=bar+'<h1>그린리모델링 사업자 인증</h1>'+
+        '<div class="note" style="margin-top:.6rem">등록 사업자만 공동입찰에 참여할 수 있어요. 건물주 이자지원 연계 조건이에요.</div>'+
+        '<div class="card" style="margin-top:.8rem"><div class="field"><label for="gr">그린리모델링 사업자 등록번호</label>'+
+        '<input id="gr" data-inp="gr" inputmode="numeric" placeholder="예) 2024-00000" value="'+esc(S.gr)+'"></div>'+
+        '<p class="small" style="margin:.8rem 0 .4rem">번호가 기억나지 않으면 등록증을 찍어 올려도 돼요.</p>'+
+        '<label class="cta ghost" for="grp">'+(S.grPhoto?'등록증 사진 1장 ✓':ico('cam')+' 등록증 사진 촬영')+'</label>'+
+        '<input id="grp" class="sr" type="file" accept="image/*" capture="environment" data-inp="grPhoto"></div>';
+      cta={ l:'다음', a:'next', off:!(S.gr.trim()||S.grPhoto) };
+    }
+    if(n===3){
+      body=bar+'<h1>시공 정보를 알려주세요</h1>'+
+        '<div class="card" style="margin-top:.8rem"><h3>시공 가능 공종</h3>'+
+        '<div class="chips">'+TRADES.map(function(t){
+          return '<button class="chip sm" data-act="trade:'+encodeURIComponent(t)+'" aria-pressed="'+(S.trades.indexOf(t)>=0)+'">'+t+'</button>';
+        }).join('')+'</div></div>'+
+        '<div class="card"><h3>활동 지역</h3>'+
+        '<dl class="rows"><div class="row"><dt>기준 주소</dt><dd>○○시 ○○구 (사업장)</dd></div></dl>'+
+        '<label class="small" for="rad" style="display:block;margin-top:.6rem">반경 <b class="num" style="color:var(--green)">'+RADIUS[S.radius]+'</b></label>'+
+        '<input id="rad" type="range" min="0" max="3" step="1" value="'+S.radius+'" data-inp="radius">'+
+        '<div class="row small">'+RADIUS.map(function(r){ return '<span>'+r+'</span>'; }).join('')+'</div></div>'+
+        '<div class="card"><h3>월 시공 가능 물량</h3>'+
+        '<div class="field"><div class="inline"><input id="mq" data-inp="qty" inputmode="numeric" value="'+esc(S.qty)+'">'+
+        '<span style="align-self:center;font-weight:700;white-space:nowrap">개 / 월</span></div></div>'+
+        '<p class="small" style="margin:.5rem 0 0">예) 창호 월 150개. 물량이 큰 Cluster를 추천할 때 기준이 돼요.</p></div>'+
+        '<div class="card"><h3>A/S 기본 보증 기간</h3>'+
+        '<div class="chips">'+[1,2,3].map(function(y){
+          return '<button class="chip" data-act="as:'+y+'" aria-pressed="'+(S.as===y)+'">'+(y===3?'3년 이상':y+'년')+'</button>';
+        }).join('')+'</div></div>';
+      cta={ l:'다음', a:'next', off:S.trades.length===0 };
+    }
+    if(n===4){
+      body=bar+'<h1>시공 실적을 등록해 주세요</h1>'+
+        '<div class="card" style="margin-top:.8rem"><h3>대표 시공 사진 <span class="small">(최대 5장)</span></h3>'+
+        (S.workPhotos? '<div class="photos" style="margin:.6rem 0">'+Array.apply(null,{length:Math.min(S.workPhotos,5)}).map(function(_,i){
+            return '<div class="ph">'+photoSvg(i)+'</div>'; }).join('')+'</div>' : '')+
+        '<label class="cta ghost" for="wp">'+ico('cam')+' 사진 촬영 · 불러오기</label>'+
+        '<input id="wp" class="sr" type="file" accept="image/*" capture="environment" multiple data-inp="workPhotos">'+
+        '<p class="small" style="margin:.6rem 0 0">'+(S.workPhotos? S.workPhotos+'장 등록됨':'건물주가 업체를 고를 때 가장 많이 보는 항목이에요.')+'</p></div>'+
+        '<div class="card"><h3>누적 시공 건수</h3>'+
+        '<div class="field"><div class="inline"><input id="tw" data-inp="totalWorks" inputmode="numeric" value="'+esc(S.totalWorks)+'">'+
+        '<span style="align-self:center;font-weight:700;white-space:nowrap">건</span></div></div></div>';
+      cta={ l:'인증 신청하기', a:'apply' };
+    }
+    return { title:'업체 등록 · 인증', back:n>1, body:body, cta:cta };
+  }
+
+  function scReview(){
+    return { title:'인증 심사', back:false, body:
+      '<div class="card" style="text-align:center;padding-block:1.5rem">'+
+      (S.certified ?
+        '<div style="width:4rem;height:4rem;border-radius:50%;background:var(--green);display:grid;place-items:center;margin:0 auto .8rem;color:#fff">'+ico('chk')+'</div>'+
+        '<h1>인증이 끝났어요</h1><p class="sub">이제 공동입찰에 참여할 수 있어요.</p>'+
+        '<div class="st won" style="margin-top:.6rem;font-size:.9375rem">✓ 인증 업체</div>'
+        :
+        '<div class="spin" style="width:2.4rem;height:2.4rem;border-width:5px;margin:.4rem auto .9rem"></div>'+
+        '<h1>인증 심사 중이에요</h1><p class="sub">보통 1일 안에 끝나요. 끝나면 알림으로 알려드려요.</p>')+
+      '<hr class="divider">'+
+      '<dl class="rows" style="text-align:left">'+
+        '<div class="row"><dt>상호</dt><dd>B업체</dd></div>'+
+        '<div class="row"><dt>시공 공종</dt><dd>'+S.trades.join(' · ')+'</dd></div>'+
+        '<div class="row"><dt>활동 반경</dt><dd>'+RADIUS[S.radius]+'</dd></div>'+
+        '<div class="row"><dt>월 시공 물량</dt><dd>'+S.qty+'개</dd></div>'+
+        '<div class="row"><dt>A/S 보증</dt><dd>'+(S.as===3?'3년 이상':S.as+'년')+'</dd></div>'+
+        '<div class="row"><dt>누적 시공</dt><dd>'+S.totalWorks+'건</dd></div>'+
+      '</dl></div>',
+      cta: S.certified ? { l:'입찰 보러 가기', a:'toBid' } : { l:'데모: 인증 완료로 보기', a:'certify' } };
+  }
+
+  /* P1 입찰 홈 */
+  function scBidHome(){
+    var openN=0, bidN=0;
+    CLUSTERS.forEach(function(c){
+      var st=cstate(c);
+      if(st==='open') openN++; else if(st==='bid') bidN++;
+    });
+    var ongoing=ONGOING.length + (S.won?1:0);
+
+    var list=CLUSTERS.filter(function(c){ return S.filter==='전체' || c.trade===S.filter; });
+    list.sort(function(a,b){
+      var ra=cstate(a)==='bid'?1:0, rb=cstate(b)==='bid'?1:0;
+      if(ra!==rb) return ra-rb;
+      if(S.sort==='마감 임박순') return a.due-b.due;
+      if(S.sort==='물량 큰 순') return b.n-a.n;
+      return parseFloat(a.dist)-parseFloat(b.dist);
+    });
+
+    var body=
+      '<div class="sum3">'+
+        '<div class="s on"><b>'+openN+'</b><span>입찰 가능</span></div>'+
+        '<div class="s"><b>'+bidN+'</b><span>입찰 완료</span></div>'+
+        '<div class="s"><b>'+ongoing+'</b><span>진행 중 공사</span></div>'+
+      '</div>'+
+      '<div class="card" style="margin-top:.75rem;padding:.75rem">'+
+        '<div class="chips">'+['전체','창호','단열','보일러'].map(function(f){
+          return '<button class="chip sm" data-act="filter:'+f+'" aria-pressed="'+(S.filter===f)+'">'+f+'</button>';
+        }).join('')+'</div>'+
+        '<div class="seg" style="margin-top:.55rem">'+['마감 임박순','물량 큰 순','가까운 순'].map(function(s){
+          return '<button data-act="sort:'+encodeURIComponent(s)+'" aria-pressed="'+(S.sort===s)+'">'+s+'</button>';
+        }).join('')+'</div>'+
+      '</div>'+
+      '<div class="card" style="padding:.75rem">'+
+        '<div class="map">'+areaMap()+'</div>'+
+        '<div class="legend"><span><i style="background:#0B4A35"></i>우리 업체</span>'+
+        '<span><i style="background:#8FD3B0;border:1px solid #0B4A35"></i>입찰 가능 Cluster</span>'+
+        '<span><i style="background:#C2CFC9;border:1px solid #0B4A35"></i>입찰 완료</span></div>'+
+        '<p class="small" style="margin:.5rem 0 0">우리 공종('+S.trades.join('·')+')과 반경 '+RADIUS[S.radius]+' 안의 공사만 보여요.</p>'+
+      '</div>'+
+      '<h3 style="margin:1.1rem 0 .5rem">공동공사 '+list.length+'건</h3>'+
+      list.map(clCard).join('')+
+      (list.length?'':'<div class="card"><p class="sub" style="margin:0">해당 공종의 공동공사가 아직 없어요.</p></div>');
+
+    return { brandTitle:null, tabs:true, body:body, cta:null };
+  }
+
+  function cstate(c){
+    if(c.no===12){ if(S.won) return 'won'; if(S.submitted) return 'bid'; return 'open'; }
+    return c.state;
+  }
+  function clCard(c){
+    var st=cstate(c), u=urgent(c.due)&&st==='open';
+    var cls = st==='won'?'won' : st==='bid'?'bid' : (u?'urgent':'');
+    var pill = st==='won'? '<span class="st won">낙찰</span>'
+             : st==='bid'? '<span class="st bid">입찰 완료</span>'
+             : (u? '<span class="st urgent">마감 임박</span>' : '<span class="st open">입찰 가능</span>');
+    return '<button class="clcard '+cls+'" data-act="cl:'+c.no+'">'+
+      '<div class="hd"><span class="no">Cluster #'+c.no+'</span>'+pill+(c.ai&&st==='open'?'<span class="ai">AI 추천</span>':'')+'</div>'+
+      '<div class="nm">'+c.name+'</div>'+
+      '<div class="facts"><span><b>'+c.n+'</b>동</span><span>'+c.qty+'</span><span>반경 <b>'+c.dist+'</b></span><span>희망 '+c.when+'</span></div>'+
+      (c.ai&&st==='open'?'<div class="info" style="margin-top:.5rem;font-size:.875rem">우리 공종·반경·월 시공량과 맞아요</div>':'')+
+      '<div class="cd"><span class="left">마감 '+ddText(c.due)+'</span>'+
+      '<span style="font-weight:900;color:var(--green)">'+(st==='won'?'공사 보기':st==='bid'?'결과 대기':'상세 보기')+' ›</span></div>'+
+      '</button>';
+  }
+
+  /* P2 Cluster 상세 */
+  function scCluster(){
+    var c=CL(S.cl);
+    if(c.no!==12){
+      return { title:'Cluster #'+c.no, back:true, body:
+        '<div class="card"><div class="hd" style="display:flex;gap:.4rem;align-items:center;flex-wrap:wrap">'+
+        '<span class="st '+(urgent(c.due)?'urgent':'open')+'">'+(urgent(c.due)?'마감 임박':'입찰 가능')+'</span></div>'+
+        '<h1 style="margin-top:.5rem">'+c.name+'</h1>'+
+        '<dl class="rows"><div class="row"><dt>참여 동수</dt><dd>'+c.n+'동</dd></div>'+
+        '<div class="row"><dt>총 물량</dt><dd>'+c.qty+'</dd></div>'+
+        '<div class="row"><dt>평균 거리</dt><dd>'+c.dist+'</dd></div>'+
+        '<div class="row"><dt>희망 시기</dt><dd>'+c.when+'</dd></div>'+
+        '<div class="row"><dt>입찰 마감</dt><dd>'+ddText(c.due)+'</dd></div></dl></div>'+
+        '<div class="plain">이 Cluster는 시연에서 상세 화면을 생략했어요. Cluster #12에서 전체 흐름을 볼 수 있어요.</div>',
+        cta:{ l:'Cluster #12 보기', a:'cl:12' } };
+    }
+
+    var rows=BUILDINGS.map(function(b){
+      return '<tr><td>건물 '+b.id+' <span class="small">'+b.area+'</span></td><td>'+b.use+'</td><td>'+b.fl+'층</td><td><b>'+b.qty+'</b></td></tr>';
+    }).join('');
+    var sch=schedule().slice(0,4).map(function(s){ return s.label+' 건물 '+s.id; });
+
+    var body=
+      '<div class="card">'+
+        '<div class="hd" style="display:flex;gap:.4rem;align-items:center;flex-wrap:wrap">'+
+          '<span class="no" style="font-family:var(--font-num);font-weight:700;color:var(--green)">Cluster #12</span>'+
+          '<span class="st '+(urgent(c.due)?'urgent':'open')+'">'+(urgent(c.due)?'마감 임박':'입찰 가능')+'</span><span class="ai">AI 추천</span>'+
+        '</div>'+
+        '<h1 style="margin:.4rem 0 .6rem">고성능 창호 공동교체</h1>'+
+        '<div class="two" style="gap:.5rem">'+
+          '<div class="plain" style="text-align:center"><div class="big" style="color:var(--green)">9동</div><div class="small">참여 건물</div></div>'+
+          '<div class="plain" style="text-align:center"><div class="big" style="color:var(--green)">87개</div><div class="small">총 창호 물량</div></div>'+
+        '</div>'+
+        '<dl class="rows" style="margin-top:.7rem">'+
+          '<div class="row"><dt>평균 거리</dt><dd>1.2km 반경 (평균 0.8km)</dd></div>'+
+          '<div class="row"><dt>희망 공사 기간</dt><dd>10~11월</dd></div>'+
+          '<div class="row"><dt>입찰 마감</dt><dd>'+ddText(c.due)+'</dd></div>'+
+        '</dl>'+
+      '</div>'+
+      '<div class="info"><b>공통 GR 성능조건</b><br>그린리모델링 성능 기준을 충족하는 고성능 창호, <b>동일 사양</b>으로 견적을 받아요. 모든 업체가 같은 조건으로 입찰하므로 가격·실적·기간·A/S가 공정하게 비교돼요.</div>'+
+      '<div class="card">'+
+        '<h3>건물별 물량</h3>'+
+        '<table class="t"><thead><tr><th>건물</th><th>용도</th><th>층수</th><th>창호</th></tr></thead>'+
+        '<tbody>'+rows+'</tbody>'+
+        '<tfoot><tr><td>합계</td><td></td><td>9동</td><td>87개</td></tr></tfoot></table>'+
+        '<div class="note" style="margin-top:.7rem">정확한 주소와 건물주 연락처는 <b>낙찰 후</b>에 공개돼요. 지금은 동 단위 위치만 보여요.</div>'+
+      '</div>'+
+      '<div class="card">'+
+        '<div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.5rem"><span class="ai">AI 추천</span><b>시공 동선</b></div>'+
+        '<div class="map">'+routeMap()+'</div>'+
+        '<div class="plain" style="margin-top:.6rem">추천 순서로 시공하면 총 이동거리 <b class="num">약 '+ROUTE_KM+'</b>예요. 순서는 낙찰 후 바꿀 수 있어요.</div>'+
+        '<h3 style="margin-top:.8rem">추천 일정</h3>'+
+        '<ul class="rows" style="list-style:none;padding:0;margin:0">'+
+          sch.map(function(s){ return '<li class="row"><dt style="color:var(--ink-2)">'+s.split(' 건물')[0]+'</dt><dd>건물 '+s.split('건물 ')[1]+'</dd></li>'; }).join('')+
+          '<li class="small" style="margin-top:.3rem">… 총 16일 기준 예시</li>'+
+        '</ul>'+
+      '</div>';
+
+    var st=cstate(c);
+    return { title:'Cluster #12', back:true, body:body,
+      cta: st==='won' ? { l:'내 공사에서 관리하기', a:'toWork' }
+         : st==='bid' ? { l:'제출한 입찰서 보기', a:'submitted' }
+         : { l:'입찰서 작성하기', a:'bidform' } };
+  }
+
+  /* P3 입찰서 작성 */
+  function scBidForm(){
+    var a=amtMan(), pu=perUnit();
+    var body=
+      '<div class="card">'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;gap:.5rem">'+
+          '<b>Cluster #12 · 창호 87개</b><span class="st '+(urgent(CL(12).due)?'urgent':'open')+'">마감 '+ddText(CL(12).due).replace(/<[^>]+>/g,'').split(' · ')[0]+'</span>'+
+        '</div>'+
+      '</div>'+
+      '<div class="card">'+
+        '<h3>총 입찰 금액</h3>'+
+        '<div class="amt"><div class="u">9동 전체 금액 (만 원 단위 입력)</div>'+
+          '<div class="v">'+(a? won(a) : '0원')+'</div>'+
+          '<div class="u" style="margin-top:.25rem">개당 단가 '+(pu? '약 '+won(pu)+' / 개':'—')+'</div></div>'+
+        (S.keypad ?
+          '<div class="keypad">'+
+            ['1','2','3','4','5','6','7','8','9'].map(function(k){ return '<button data-act="key:'+k+'">'+k+'</button>'; }).join('')+
+            '<button class="act" data-act="key:C">전체<br>지움</button>'+
+            '<button data-act="key:0">0</button>'+
+            '<button class="act" data-act="key:B">←</button>'+
+            '<button class="act" data-act="key:00" style="grid-column:span 2">00</button>'+
+            '<button class="act" data-act="keypad">입력 완료</button>'+
+          '</div>'
+          : '<button class="cta ghost sm" data-act="keypad" style="margin-top:.6rem">금액 다시 입력하기</button>')+
+        (a? '<p class="small" style="margin:.6rem 0 0">87개로 나눈 개당 단가가 건물주 앱에 함께 표시돼요.</p>':'')+
+      '</div>'+
+      '<div class="card">'+
+        '<h3>공사 기간</h3>'+
+        '<div class="chips">'+['13','14','16','18','20'].map(function(d){
+          return '<button class="chip" data-act="days:'+d+'" aria-pressed="'+(S.days===d)+'">'+d+'일</button>';
+        }).join('')+'</div>'+
+        '<h3 style="margin-top:.9rem">A/S 보증 기간 <span class="small">(등록값 '+(S.as===3?'3년 이상':S.as+'년')+')</span></h3>'+
+        '<div class="chips">'+[1,2,3].map(function(y){
+          return '<button class="chip" data-act="bidas:'+y+'" aria-pressed="'+(S.bidAs===y)+'">'+(y===3?'3년 이상':y+'년')+'</button>';
+        }).join('')+'</div>'+
+        '<h3 style="margin-top:.9rem">투입 인력</h3>'+
+        '<div class="chips">'+['1팀','2팀','3팀 이상'].map(function(t){
+          return '<button class="chip" data-act="teams:'+encodeURIComponent(t)+'" aria-pressed="'+(S.teams===t)+'">'+t+'</button>';
+        }).join('')+'</div>'+
+      '</div>'+
+      '<div class="card">'+
+        '<h3>현장 확인 가능 일정 <span class="small">(최대 3개)</span></h3>'+
+        '<div class="chips">'+DATES.map(function(d,i){
+          return '<button class="chip sm" data-act="date:'+i+'" aria-pressed="'+(S.dates.indexOf(i)>=0)+'">'+d+'</button>';
+        }).join('')+'</div>'+
+        '<p class="small" style="margin:.6rem 0 0">'+(S.dates.length? S.dates.length+'개 선택됨':'하나 이상 골라 주세요.')+'</p>'+
+      '</div>'+
+      '<div class="card">'+
+        '<h3>한 줄 강점 <span class="small">(선택 · 50자)</span></h3>'+
+        '<div class="field"><input id="memo" data-inp="memo" maxlength="50" placeholder="예) 동일 단지 창호 교체 경험 다수" value="'+esc(S.memo)+'"></div>'+
+      '</div>'+
+      '<h3 style="margin:1.1rem 0 .5rem">건물주에게 이렇게 보여요</h3>'+
+      '<div class="prev">'+
+        '<div style="display:flex;align-items:center;gap:.4rem;flex-wrap:wrap"><span class="nm">B업체</span>'+
+          '<span class="st open">A/S 최장</span></div>'+
+        '<div class="big" style="margin-top:.4rem">'+(a? won(a):'— 원')+'</div>'+
+        '<div class="meta"><span>공사 기간 <b>'+S.days+'일</b></span><span>시공 실적 <b>'+S.totalWorks+'건</b></span>'+
+          '<span>A/S 보증 <b>'+(S.bidAs===3?'3년':S.bidAs+'년')+'</b></span><span>평점 <b>★ '+ME.rate.toFixed(1)+'</b></span></div>'+
+        '<div style="color:var(--green);font-weight:900;font-size:.875rem;margin-top:.5rem">✓ 그린리모델링 등록 사업자</div>'+
+        (S.memo? '<div class="plain" style="margin-top:.5rem">“'+esc(S.memo)+'”</div>':'')+
+        '<div class="small" style="margin-top:.5rem">내 건물 예상 부담금: 창호 10개 기준 '+(pu? '약 '+won(pu*10):'—')+'</div>'+
+      '</div>'+
+      '<div class="info" style="margin-top:.75rem">건물주는 가격·실적·기간·A/S를 종합해서 선택해요. <b>최저가만으로 선정되지 않아요.</b></div>'+
+      '<p class="small" style="margin-top:.6rem">금액은 업체가 직접 정해요. 그린토피아는 입찰가를 추천하지 않아요.</p>';
+
+    return { title:'입찰서 작성', back:true, body:body, cta:{ l:'입찰 제출', a:'submit', off:!(a>0 && S.dates.length>0) } };
+  }
+
+  function scSubmitted(){
+    var a=amtMan(), pu=perUnit();
+    return { title:'입찰 제출 완료', back:true, body:
+      '<div class="card" style="text-align:center;padding-block:1.4rem">'+
+        '<div style="width:3.6rem;height:3.6rem;border-radius:50%;background:var(--green);display:grid;place-items:center;margin:0 auto .7rem;color:#fff">'+ico('chk')+'</div>'+
+        '<h1>입찰이 제출됐어요</h1><p class="sub">마감 후 결과를 알려드려요.</p>'+
+        '<div class="st '+(urgent(CL(12).due)?'urgent':'bid')+'" style="margin-top:.5rem">마감 '+ddText(CL(12).due).replace(/<\/?span[^>]*>/g,'')+'</div>'+
+      '</div>'+
+      '<div class="card"><h3>제출 내용</h3><dl class="rows">'+
+        '<div class="row"><dt>Cluster</dt><dd>#12 · 9동 · 87개</dd></div>'+
+        '<div class="row"><dt>총 입찰 금액</dt><dd>'+won(a)+'</dd></div>'+
+        '<div class="row"><dt>개당 단가</dt><dd>약 '+won(pu)+'</dd></div>'+
+        '<div class="row"><dt>공사 기간</dt><dd>'+S.days+'일</dd></div>'+
+        '<div class="row"><dt>A/S 보증</dt><dd>'+(S.bidAs===3?'3년 이상':S.bidAs+'년')+'</dd></div>'+
+        '<div class="row"><dt>투입 인력</dt><dd>'+S.teams+'</dd></div>'+
+        '<div class="row"><dt>현장 확인 가능</dt><dd>'+(S.dates.map(function(i){return DATES[i];}).join(', ')||'—')+'</dd></div>'+
+      '</dl></div>'+
+      '<div class="plain">마감 전까지는 입찰서를 고칠 수 있어요.</div>',
+      cta:{ l:'데모: 결과 보기', a:'result' } };
+  }
+
+  function scResult(){
+    var a=amtMan(), pu=perUnit();
+    return { title:'입찰 결과', back:false, body:
+      '<div class="card" style="text-align:center;padding-block:1.5rem;border:2px solid var(--green)">'+
+        '<div class="st won" style="font-size:.9375rem">낙찰</div>'+
+        '<h1 style="margin-top:.6rem">Cluster #12 낙찰!</h1>'+
+        '<p class="sub" style="margin:0">9동 중 <b>9동</b>이 우리 업체를 선택했어요.</p>'+
+        '<div class="two" style="margin-top:.9rem">'+
+          '<div class="plain" style="text-align:center"><div class="big" style="color:var(--green)">'+won(a)+'</div><div class="small">수주 금액</div></div>'+
+          '<div class="plain" style="text-align:center"><div class="big" style="color:var(--green)">87개</div><div class="small">창호 물량</div></div>'+
+        '</div>'+
+      '</div>'+
+      '<div class="card"><h3>다음 단계</h3><ul class="rows" style="list-style:none;padding:0;margin:0">'+
+        '<li class="row"><dt>1. 주소·연락처 공개</dt><dd>지금 가능</dd></li>'+
+        '<li class="row"><dt>2. 건물별 현장 확인</dt><dd>'+(S.dates.map(function(i){return DATES[i];})[0]||'10/28(화)')+' 부터</dd></li>'+
+        '<li class="row"><dt>3. 건물별 개별 계약</dt><dd>현장 확인 후</dd></li>'+
+      '</ul>'+
+      '<div class="info" style="margin-top:.7rem">공동입찰 단가는 9동 모두 같고(개당 약 '+won(pu)+'), 계약은 각 건물주와 따로 맺어요.</div></div>',
+      cta:{ l:'내 공사에서 관리하기', a:'toWork' } };
+  }
+
+  /* P4 내 공사 */
+  function scWorkList(){
+    var body='';
+    if(S.won){
+      var done=doneCount();
+      body+='<button class="clcard won" data-act="work:12">'+
+        '<div class="hd"><span class="no">Cluster #12</span><span class="st won">낙찰 · 시공 관리</span></div>'+
+        '<div class="nm">고성능 창호 공동교체</div>'+
+        '<div class="facts"><span><b>9</b>동</span><span>창호 <b>87</b>개</span><span>완료 <b>'+done+'</b>/9동</span></div>'+
+        '<div class="cd"><span class="left">계약 금액 '+won(amtMan())+'</span><span style="font-weight:900;color:var(--green)">관리하기 ›</span></div>'+
+        '</button>';
+    }
+    body+=ONGOING.map(function(o){
+      return '<div class="clcard" style="border-left-color:var(--line-2)">'+
+        '<div class="hd"><span class="no">Cluster #'+o.no+'</span><span class="st bid">'+o.stage+'</span></div>'+
+        '<div class="nm">'+o.name+'</div>'+
+        '<div class="facts"><span><b>'+o.n+'</b>동</span><span>'+o.note+'</span></div>'+
+        '</div>';
+    }).join('');
+    if(!S.won) body='<div class="plain" style="margin-bottom:.75rem">낙찰된 공동공사가 여기에 쌓여요. 입찰 탭에서 Cluster #12에 입찰해 보세요.</div>'+body;
+    return { brandTitle:'내 공사', tabs:true, body:body, cta:null };
+  }
+
+  function scWorkDetail(){
+    var done=doneCount();
+    var sch=schedule();
+    var body=
+      '<div class="card">'+
+        '<div class="hd" style="display:flex;gap:.4rem;align-items:center"><span class="no" style="font-family:var(--font-num);color:var(--green);font-weight:700">Cluster #12</span><span class="st won">시공 관리</span></div>'+
+        '<h1 style="margin:.4rem 0 .5rem">고성능 창호 공동교체</h1>'+
+        '<dl class="rows"><div class="row"><dt>계약 금액</dt><dd>'+won(amtMan())+'</dd></div>'+
+        '<div class="row"><dt>개당 단가</dt><dd>약 '+won(perUnit())+'</dd></div>'+
+        '<div class="row"><dt>완료</dt><dd>'+done+' / 9동</dd></div></dl>'+
+      '</div>'+
+      (done===9 ?
+        '<div class="card fade" style="border:2px solid var(--green);text-align:center">'+
+          '<span class="ai">AI 학습</span>'+
+          '<h2 style="margin-top:.5rem">9동 전체 시공이 끝났어요</h2>'+
+          '<p class="sub" style="margin:0">공사 결과가 기록됐어요. 다음 Cluster 추천에 반영돼요.</p></div>' : '')+
+      '<div class="info">공동입찰 단가는 9동 모두 같고, <b>계약은 각 건물주와 따로</b> 맺어요. 아래에서 건물별로 진행하세요.</div>'+
+      '<div class="card">'+
+        '<h3>건물별 진행 상태</h3>'+
+        '<div class="bgrid" style="margin-top:.5rem">'+
+        BUILDINGS.map(function(b){
+          var st=S.stages[b.id];
+          var names=['현장 확인','계약','착공','완료'];
+          return '<button class="bcard'+(st>=3?' done':'')+'" data-act="bld:'+b.id+'">'+
+            '<div class="t">건물 '+b.id+' <span class="small">'+b.area+'</span></div>'+
+            '<div class="s">창호 '+b.qty+'개 · '+b.use+'</div>'+
+            '<div class="bstep">'+[0,1,2,3].map(function(i){
+              return '<i class="'+(i<st?'on':(i===st?'now':''))+'"></i>';
+            }).join('')+'</div>'+
+            '<div class="s" style="margin-top:.25rem;color:var(--green);font-weight:700">'+(st>=3?'완료':names[st]+' 단계')+'</div>'+
+            '</button>';
+        }).join('')+
+        '</div>'+
+        '<p class="small" style="margin:.6rem 0 0">현장 확인 → 계약 → 착공 → 완료</p>'+
+      '</div>'+
+      '<div class="card">'+
+        '<div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.4rem"><span class="ai">AI 추천</span><b>시공 일정</b></div>'+
+        '<p class="small" style="margin:0 0 .6rem">추천 동선 순서로 자동 배치했어요. 손잡이를 끌어 올리거나 내려서 순서를 바꾸면 일자가 다시 계산돼요.</p>'+
+        '<div id="sched">'+
+        sch.map(function(s,i){
+          return '<div class="srow" data-idx="'+i+'" data-id="'+s.id+'">'+
+            '<span class="h" data-drag aria-hidden="true">⋮⋮</span>'+
+            '<span class="d">'+s.label+'</span>'+
+            '<span class="b">건물 '+s.id+' <span class="small">창호 '+B(s.id).qty+'개</span></span>'+
+            '<span class="ar"><button data-act="up:'+i+'" aria-label="건물 '+s.id+' 순서 위로">▲</button>'+
+            '<button data-act="down:'+i+'" aria-label="건물 '+s.id+' 순서 아래로">▼</button></span>'+
+            '</div>';
+        }).join('')+
+        '</div>'+
+        '<div class="plain" style="margin-top:.6rem">총 <b class="num">16일</b> · 추천 순서 기준 이동거리 <b class="num">약 '+ROUTE_KM+'</b></div>'+
+      '</div>'+
+      (done<9 ? '<button class="cta ghost sm" data-act="demoAll">데모: 나머지 건물 완료 처리</button>' : '');
+
+    return { title:'Cluster #12 시공', back:true, body:body, cta:null };
+  }
+
+  function scBuilding(){
+    var b=B(S.bld), st=S.stages[b.id], ck=S.checks[b.id];
+    var names=['현장 확인','계약','착공','완료'];
+    var allChk = ck.before && ck.after && ck.cert;
+
+    var body=
+      '<div class="card">'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;gap:.5rem">'+
+          '<h1 style="margin:0">건물 '+b.id+'</h1>'+
+          '<span class="st '+(st>=3?'won':'open')+'">'+(st>=3?'완료':names[st])+'</span>'+
+        '</div>'+
+        '<div class="bstep" style="margin-top:.6rem">'+[0,1,2,3].map(function(i){
+          return '<i class="'+(i<st?'on':(i===st?'now':''))+'"></i>';
+        }).join('')+'</div>'+
+        '<dl class="rows" style="margin-top:.7rem">'+
+          '<div class="row"><dt>창호 물량</dt><dd>'+b.qty+'개</dd></div>'+
+          '<div class="row"><dt>건물</dt><dd>'+b.use+' · '+b.fl+'층</dd></div>'+
+          '<div class="row"><dt>주소</dt><dd>'+b.addr+'</dd></div>'+
+          '<div class="row"><dt>건물주 연락처</dt><dd class="num">'+b.tel+'</dd></div>'+
+        '</dl>'+
+        '<div class="two" style="margin-top:.7rem">'+
+          '<button class="cta ghost sm" data-act="call:'+b.id+'">'+ico('tel')+' 전화</button>'+
+          '<button class="cta ghost sm" data-act="nav:'+b.id+'">'+ico('nav')+' 길찾기</button>'+
+        '</div>'+
+        '<p class="small" style="margin:.6rem 0 0">낙찰 후 공개된 정보예요. 시연용 가상 번호입니다.</p>'+
+      '</div>'+
+      (st<2 ?
+        '<div class="card"><h3>'+names[st]+' 단계</h3>'+
+          '<p class="sub" style="margin:0 0 .7rem">'+(st===0?'현장에서 창 크기와 설치 조건을 확인하세요. 확인이 끝나면 계약 단계로 넘어가요.':'건물주와 개별 계약을 맺으면 착공할 수 있어요. 단가는 공동입찰가와 같아요.')+'</p>'+
+          '<button class="cta sm" data-act="stage:'+b.id+'">'+(st===0?'현장 확인 완료':'계약 완료')+'</button></div>'
+        : '')+
+      (st>=2 ?
+        '<div class="card">'+
+          '<h3>시공 체크리스트</h3>'+
+          '<div class="stack" style="margin-top:.5rem">'+
+            chkRow(b.id,'before','착공 전 사진','창호 교체 전 상태')+
+            chkRow(b.id,'after','시공 후 사진','교체 완료 상태')+
+            chkRow(b.id,'cert','사용 창호 성능 확인서','자재 성능 확인서 촬영')+
+          '</div>'+
+          (st>=3 ? '<div class="info" style="margin-top:.8rem">건물주에게 완료 확인 요청을 보냈어요.</div>'
+                 : '<button class="cta sm" data-act="bdone:'+b.id+'" style="margin-top:.8rem"'+(allChk?'':' disabled')+'>이 건물 시공 완료</button>'+
+                   (allChk?'':'<p class="small" style="margin:.5rem 0 0">사진 3가지를 모두 올리면 완료 처리할 수 있어요.</p>'))+
+        '</div>' : '');
+
+    return { title:'건물 '+b.id+' · '+b.area, back:true, body:body, cta:null };
+  }
+  function chkRow(id,key,title,desc){
+    var on=S.checks[id][key];
+    return '<label class="chk'+(on?' done':'')+'" for="f-'+id+'-'+key+'">'+
+      '<span class="bx" aria-hidden="true">'+(on?'✓':'')+'</span>'+
+      '<span class="tx"><b>'+title+'</b><span>'+(on?'1장 등록됨':desc)+'</span></span>'+
+      '<span class="cam">'+(on?'다시':'촬영')+'</span>'+
+      '<input class="sr" id="f-'+id+'-'+key+'" type="file" accept="image/*" capture="environment" data-chk="'+id+':'+key+'">'+
+      '</label>';
+  }
+
+  /* P5 업체 정보 */
+  function scInfo(){
+    var body=
+      '<div class="card">'+
+        '<div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">'+
+          '<h1 style="margin:0">B업체</h1><span class="st won">✓ 인증 업체</span></div>'+
+        '<p class="small" style="margin:.3rem 0 0">그린리모델링 등록 사업자 · '+S.trades.join(' · ')+'</p>'+
+        '<div class="sum3" style="margin-top:.8rem">'+
+          '<div class="s on"><b>'+ME.rate.toFixed(1)+'</b><span>평점</span></div>'+
+          '<div class="s on"><b>'+ME.works+'</b><span>시공 건수</span></div>'+
+          '<div class="s on"><b>'+ME.asRate+'%</b><span>A/S 응답률</span></div>'+
+        '</div>'+
+      '</div>'+
+      '<div class="card">'+
+        '<h3>A/S 요청함 <span class="st urgent">'+AS_REQS.filter(function(r){return r.state==='new';}).length+'건 대기</span></h3>'+
+        AS_REQS.map(function(r){
+          return '<div style="border:1px solid var(--line);border-radius:10px;padding:.7rem;margin-top:.55rem">'+
+            '<div style="display:flex;justify-content:space-between;gap:.5rem"><b>'+r.b+'</b><span class="small">'+r.d+'</span></div>'+
+            '<p style="margin:.25rem 0 .5rem">'+r.t+'</p>'+
+            (r.state==='new'
+              ? '<div class="two"><button class="cta ghost sm" data-act="asplan:'+r.id+'">일정 잡기</button>'+
+                '<button class="cta sm" data-act="asdone:'+r.id+'">처리 완료</button></div>'
+              : '<span class="st bid">'+(r.state==='planned'?'일정 잡음':'처리 완료')+'</span>')+
+            '</div>';
+        }).join('')+
+      '</div>'+
+      '<div class="card">'+
+        '<h3>받은 후기</h3>'+
+        REVIEWS.map(function(r,i){
+          return '<div style="'+(i?'border-top:1px solid var(--line);margin-top:.6rem;padding-top:.6rem':'margin-top:.4rem')+'">'+
+            '<div style="display:flex;gap:.5rem;align-items:center"><span class="stars">★ '+r.s.toFixed(1)+'</span><span class="small">'+r.w+'</span></div>'+
+            '<p style="margin:.2rem 0 0">'+r.t+'</p></div>';
+        }).join('')+
+      '</div>'+
+      '<div class="card">'+
+        '<h3>정산 내역 <span class="small">(Cluster #12)</span></h3>'+
+        '<table class="t"><thead><tr><th>건물</th><th>계약 금액</th><th>계약금</th><th>잔금</th></tr></thead><tbody>'+
+        SETTLE.map(function(s){
+          return '<tr><td>'+s.b+'</td><td>'+s.amount.toLocaleString('ko-KR')+'만</td>'+
+            '<td><span class="st '+(s.down==='입금'?'open':'bid')+'">'+s.down+'</span></td>'+
+            '<td><span class="st bid">'+s.rest+'</span></td></tr>';
+        }).join('')+'</tbody></table>'+
+        '<p class="small" style="margin:.6rem 0 0">나머지 6동은 계약 전이에요.</p>'+
+      '</div>'+
+      '<div class="card">'+
+        '<h3>시공 정보</h3>'+
+        (S.editInfo ?
+          '<div class="fade"><h3 style="margin-top:.6rem;font-size:.9375rem">시공 공종</h3>'+
+          '<div class="chips">'+TRADES.map(function(t){
+            return '<button class="chip sm" data-act="trade:'+encodeURIComponent(t)+'" aria-pressed="'+(S.trades.indexOf(t)>=0)+'">'+t+'</button>';
+          }).join('')+'</div>'+
+          '<label class="small" for="rad2" style="display:block;margin-top:.7rem">활동 반경 <b class="num" style="color:var(--green)">'+RADIUS[S.radius]+'</b></label>'+
+          '<input id="rad2" type="range" min="0" max="3" step="1" value="'+S.radius+'" data-inp="radius">'+
+          '<div class="field" style="margin-top:.4rem"><label for="mq2">월 시공 가능 물량</label>'+
+          '<div class="inline"><input id="mq2" data-inp="qty" inputmode="numeric" value="'+esc(S.qty)+'">'+
+          '<span style="align-self:center;font-weight:700;white-space:nowrap">개 / 월</span></div></div>'+
+          '<button class="cta sm" data-act="saveInfo" style="margin-top:.8rem">저장</button></div>'
+          :
+          '<dl class="rows"><div class="row"><dt>시공 공종</dt><dd style="text-align:right">'+S.trades.join(' · ')+'</dd></div>'+
+          '<div class="row"><dt>활동 반경</dt><dd>'+RADIUS[S.radius]+'</dd></div>'+
+          '<div class="row"><dt>월 시공 물량</dt><dd>'+S.qty+'개</dd></div>'+
+          '<div class="row"><dt>A/S 기본 보증</dt><dd>'+(S.as===3?'3년 이상':S.as+'년')+'</dd></div></dl>'+
+          '<button class="cta ghost sm" data-act="editInfo" style="margin-top:.8rem">시공 정보 수정</button>')+
+      '</div>'+
+      '<p class="small" style="margin-top:1rem">※ 이 앱은 시연용 프로토타입이에요. Cluster 번호, 입찰가, 평점, 후기, 정산 내역 등 화면에 보이는 모든 수치와 사례는 가상 예시이며 실제와 다를 수 있어요.</p>';
+    return { brandTitle:'업체 정보', tabs:true, body:body, cta:null };
+  }
+
+  /* ───────── 렌더 ───────── */
+  function render(keep){
+    var sc=screen(), hdr='';
+    if(sc.brandTitle===null || sc.brandTitle===undefined){
+      if(sc.title){
+        hdr=(sc.back?'<button class="iconbtn" data-act="back" aria-label="뒤로 가기">'+ico('back')+'</button>':'')+'<span class="ttl">'+sc.title+'</span>';
+      } else {
+        hdr='<span class="brand">그린토피아</span><span class="tag">파트너</span>';
+      }
+    } else {
+      hdr='<span class="brand">그린토피아</span><span class="tag">파트너</span><span class="sp"></span><span class="ttl" style="font-size:.9375rem">'+sc.brandTitle+'</span>';
+    }
+    if(hdr.indexOf('class="sp"')<0){
+      hdr+='<span class="sp"></span>'+(hdr.indexOf('class="tag"')<0?'<span class="tag">파트너</span>':'');
+    }
+    if(S.certified) hdr+='<span class="cert">✓ 인증</span>';
+    document.getElementById('hdr').innerHTML=hdr;
+
+    document.getElementById('screen').innerHTML='<div class="stack">'+sc.body+'</div>';
+
+    var f='';
+    if(sc.cta) f+='<button class="cta" data-act="'+sc.cta.a+'"'+(sc.cta.off?' disabled':'')+'>'+sc.cta.l+'</button>';
+    if(sc.tabs){
+      f+='<nav class="tabbar" aria-label="주요 메뉴">'+
+        [['bid','입찰','gavel'],['work','내 공사','clip'],['info','업체 정보','shop']].map(function(t){
+          return '<button data-act="tab:'+t[0]+'"'+(S.tab===t[0]?' aria-current="page"':'')+'>'+ico(t[2])+'<span>'+t[1]+'</span></button>';
+        }).join('')+'</nav>';
+    }
+    document.getElementById('foot').innerHTML=f;
+
+    requestAnimationFrame(function(){
+      var h=document.querySelector('.foot').offsetHeight||0;
+      document.getElementById('screen').style.paddingBottom=(h+24)+'px';
+      initDrag();
+    });
+    if(!keep) window.scrollTo(0,0);
+  }
+
+  /* ───────── 일정 드래그 ───────── */
+  function initDrag(){
+    var list=document.getElementById('sched'); if(!list || list.dataset.init) return;
+    list.dataset.init='1';
+    var row=null, startY=0, rowH=0, from=0;
+    list.addEventListener('pointerdown', function(e){
+      var h=e.target.closest('[data-drag]'); if(!h) return;
+      row=h.closest('.srow'); from=+row.dataset.idx; startY=e.clientY; rowH=row.offsetHeight+6;
+      row.classList.add('drag'); h.setPointerCapture(e.pointerId); e.preventDefault();
+    });
+    list.addEventListener('pointermove', function(e){
+      if(!row) return;
+      row.style.transform='translateY('+(e.clientY-startY)+'px)';
+    });
+    function end(e){
+      if(!row) return;
+      var dy=e.clientY-startY;
+      row.classList.remove('drag'); row.style.transform='';
+      var to=Math.max(0, Math.min(S.order.length-1, from+Math.round(dy/rowH)));
+      row=null;
+      if(to!==from){ move(from,to); }
+    }
+    list.addEventListener('pointerup', end);
+    list.addEventListener('pointercancel', end);
+  }
+  function move(from,to){
+    var a=S.order.splice(from,1)[0];
+    S.order.splice(to,0,a);
+    render(true);
+    toast('일정 순서를 바꿨어요');
+  }
+
+  /* ───────── 이벤트 ───────── */
+  document.addEventListener('click', function(e){
+    var el=e.target.closest('[data-act]'); if(!el) return;
+    var p=el.getAttribute('data-act').split(':'), a=p[0], g=p[1];
+    e.preventDefault();
+
+    switch(a){
+      case 'next': S.step=Math.min(4,S.step+1); break;
+      case 'back': goBack(); break;
+      case 'bizchk':
+        if(!S.biz.trim()){ toast('사업자등록번호를 입력해 주세요'); return; }
+        S.bizLoading=true; S.bizOk=false; render(true);
+        setTimeout(function(){ S.bizLoading=false; S.bizOk=true; render(true); }, 900); return;
+      case 'trade':
+        var t=decodeURIComponent(g), i=S.trades.indexOf(t);
+        if(i<0) S.trades.push(t); else S.trades.splice(i,1);
+        render(true); return;
+      case 'as': S.as=parseInt(g,10); S.bidAs=S.as; render(true); return;
+      case 'apply': S.view='review'; break;
+      case 'certify': S.certified=true; render(); toast('인증이 완료됐어요'); return;
+      case 'toBid': S.view='tab'; S.tab='bid'; break;
+      case 'filter': S.filter=g; render(true); return;
+      case 'sort': S.sort=decodeURIComponent(g); render(true); return;
+      case 'cl':
+        var no=parseInt(g,10);
+        if(no===12 && S.won){ S.workCl=12; S.view='work'; break; }
+        if(no===12 && S.submitted){ S.view='submitted'; break; }
+        S.cl=no; S.view='cluster'; break;
+      case 'bidform': S.view='bidform'; break;
+      case 'key':
+        if(g==='C') S.amount='';
+        else if(g==='B') S.amount=S.amount.slice(0,-1);
+        else S.amount=(S.amount+g).replace(/^0+/,'').slice(0,6);
+        render(true); return;
+      case 'keypad': S.keypad=!S.keypad; render(true); return;
+      case 'days': S.days=g; render(true); return;
+      case 'bidas': S.bidAs=parseInt(g,10); render(true); return;
+      case 'teams': S.teams=decodeURIComponent(g); render(true); return;
+      case 'date':
+        var di=parseInt(g,10), k=S.dates.indexOf(di);
+        if(k>=0) S.dates.splice(k,1);
+        else { if(S.dates.length>=3){ toast('최대 3개까지 고를 수 있어요'); return; } S.dates.push(di); }
+        render(true); return;
+      case 'submit': S.submitted=true; S.view='submitted'; break;
+      case 'submitted': S.view='submitted'; break;
+      case 'result': S.won=true; S.resultSeen=true; S.view='result'; break;
+      case 'toWork': S.workCl=12; S.view='work'; break;
+      case 'work': S.workCl=parseInt(g,10); S.view='work'; break;
+      case 'bld': S.bld=parseInt(g,10); S.view='bld'; break;
+      case 'stage': S.stages[+g]=Math.min(3,S.stages[+g]+1); render(true);
+        toast(S.stages[+g]===1?'현장 확인을 완료했어요':'계약을 완료했어요. 착공할 수 있어요'); return;
+      case 'bdone': S.stages[+g]=3; render(true); toast('건물주에게 완료 확인 요청을 보냈어요'); return;
+      case 'demoAll':
+        BUILDINGS.forEach(function(b){ S.stages[b.id]=3; S.checks[b.id]={before:true,after:true,cert:true}; });
+        render(); toast('9동 전체를 완료 처리했어요'); return;
+      case 'up': if(+g>0) move(+g,+g-1); return;
+      case 'down': if(+g<S.order.length-1) move(+g,+g+1); return;
+      case 'call': toast('전화 연결은 시연에서 생략했어요'); return;
+      case 'nav': toast('지도 앱 연결은 시연에서 생략했어요'); return;
+      case 'asplan': toast('A/S 방문 일정을 건물주에게 제안했어요'); return;
+      case 'asdone':
+        for(var j=0;j<AS_REQS.length;j++){ if(AS_REQS[j].id===+g) AS_REQS[j].state='done'; }
+        render(true); toast('A/S 처리를 완료했어요'); return;
+      case 'editInfo': S.editInfo=true; render(true); return;
+      case 'saveInfo': S.editInfo=false; render(true); toast('시공 정보를 저장했어요'); return;
+      case 'tab': S.view='tab'; S.tab=g; break;
+      default: return;
+    }
+    render();
+  });
+
+  function goBack(){
+    if(S.view==='p0' && S.step>1){ S.step--; return; }
+    if(S.view==='cluster'){ S.view='tab'; S.tab='bid'; return; }
+    if(S.view==='bidform'){ S.view='cluster'; S.cl=12; return; }
+    if(S.view==='submitted'){ S.view='tab'; S.tab='bid'; return; }
+    if(S.view==='work'){ S.view='tab'; S.tab='work'; return; }
+    if(S.view==='bld'){ S.view='work'; return; }
+    S.view='tab'; S.tab='bid';
+  }
+
+  document.addEventListener('input', function(e){
+    var el=e.target, k=el.getAttribute('data-inp'); if(!k) return;
+    if(k==='biz'){ S.biz=el.value; return; }
+    if(k==='gr'){ S.gr=el.value; var c=document.querySelector('#foot .cta'); if(c) c.disabled=!(S.gr.trim()||S.grPhoto); return; }
+    if(k==='qty'){ S.qty=el.value.replace(/[^0-9]/g,''); return; }
+    if(k==='totalWorks'){ S.totalWorks=el.value.replace(/[^0-9]/g,''); return; }
+    if(k==='memo'){ S.memo=el.value; return; }
+    if(k==='radius'){
+      S.radius=parseInt(el.value,10);
+      var lab=el.previousElementSibling; if(lab) lab.innerHTML=(el.id==='rad'?'반경 ':'활동 반경 ')+'<b class="num" style="color:var(--green)">'+RADIUS[S.radius]+'</b>';
+      var mp=document.querySelector('.map'); if(mp && S.view==='tab') mp.innerHTML=areaMap();
+      return;
+    }
+  });
+
+  document.addEventListener('change', function(e){
+    var el=e.target;
+    var k=el.getAttribute('data-inp');
+    if(k==='grPhoto'){ S.grPhoto=!!(el.files&&el.files.length); render(true); if(S.grPhoto) toast('등록증 사진을 올렸어요'); return; }
+    if(k==='workPhotos'){ S.workPhotos=Math.min(5,(el.files?el.files.length:0)); render(true); if(S.workPhotos) toast(S.workPhotos+'장을 올렸어요'); return; }
+    var c=el.getAttribute('data-chk');
+    if(c){
+      var pp=c.split(':');
+      if(el.files && el.files.length){
+        S.checks[+pp[0]][pp[1]]=true; render(true); toast('사진을 등록했어요');
+      }
+    }
+  });
+
+  document.addEventListener('submit', function(e){ e.preventDefault(); });
+
+  setInterval(function(){
+    document.querySelectorAll('.cd .left').forEach(function(){});
+    if(S.view==='tab' && S.tab==='bid') render(true);
+  }, 60000);
+
+  render();
+})();
+</script>
+
+</body></html>

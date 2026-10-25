@@ -1,0 +1,1064 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>그린토피아</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@600;700&display=swap">
+<style>
+  /* 레이아웃: 390px 모바일 단일 컬럼 · 상단 고정 헤더 + 하단 고정 CTA/탭바 */
+  :root{
+    --green:#0B4A35; --green-600:#0E5C42; --green-50:#E6F2EC;
+    --mint:#8FD3B0; --mint-50:#E6F5EE; --mint-100:#CFEBDD;
+    --bg:#F6F8F7; --card:#FFFFFF; --line:#DAE4DF;
+    --ink:#11221C; --ink-2:#3B524A; --ink-3:#5B7268;
+    --warn:#E07A3F; --warn-50:#FDF1E8; --warn-ink:#A14A14;
+    --radius:16px; --shadow:0 1px 3px rgba(11,74,53,.06), 0 6px 18px rgba(11,74,53,.05);
+    --font-body:'Noto Sans KR', system-ui, -apple-system, 'Malgun Gothic', sans-serif;
+    --font-display:'Noto Serif KR','Noto Sans KR', serif;
+    --s:1;
+    color-scheme: light;
+  }
+  html{ font-size: calc(16px * var(--s)); }
+  html, body{ background:var(--bg); }
+  body{
+    margin:0; font-family:var(--font-body); color:var(--ink);
+    font-size:1.125rem; line-height:1.6; -webkit-text-size-adjust:100%;
+  }
+  body::before{ content:""; position:fixed; inset:0 0 auto; height:env(safe-area-inset-top,0px); z-index:30; background:var(--green); }
+  *{ box-sizing:border-box; }
+  button{ font-family:inherit; font-size:inherit; color:inherit; cursor:pointer; border:0; background:none; }
+  input, textarea{ font-family:inherit; font-size:1.125rem; color:var(--ink); }
+  :focus-visible{ outline:3px solid var(--green); outline-offset:2px; border-radius:8px; }
+  @media (prefers-reduced-motion: reduce){ *{ animation:none !important; transition:none !important; } }
+
+  /* ── 앱 셸 ───────────────────────────── */
+  .app{ max-width:390px; margin:0 auto; min-height:100vh; background:var(--bg); position:relative; }
+  .hdr{
+    position:sticky; top:env(safe-area-inset-top,0px); z-index:20;
+    background:var(--green); color:#fff; display:flex; align-items:center; gap:.5rem;
+    padding-block:.7rem; padding-left:max(16px, env(safe-area-inset-left,0px)); padding-right:max(16px, env(safe-area-inset-right,0px));
+  }
+  .hdr .brand{ font-family:var(--font-display); font-weight:700; font-size:1.25rem; letter-spacing:-.01em; }
+  .hdr .ttl{ font-weight:700; font-size:1.125rem; }
+  .hdr .sp{ margin-left:auto; }
+  .iconbtn{
+    width:2.75rem; height:2.75rem; display:grid; place-items:center; border-radius:12px;
+    background:rgba(255,255,255,.12); color:#fff; flex:0 0 auto;
+  }
+  .bigbtn{
+    display:flex; align-items:center; gap:.35rem; height:2.75rem; padding:0 .7rem; border-radius:999px;
+    background:rgba(255,255,255,.14); color:#fff; font-size:.95rem; font-weight:500; white-space:nowrap;
+  }
+  .bigbtn[aria-pressed="true"]{ background:var(--mint); color:var(--green); font-weight:700; }
+
+  .scroll{
+    padding-left:max(16px, env(safe-area-inset-left,0px)); padding-right:max(16px, env(safe-area-inset-right,0px));
+    padding-block:1.125rem 11rem;
+  }
+  .foot{
+    position:fixed; left:0; right:0; bottom:0; z-index:25; display:flex; justify-content:center;
+    background:linear-gradient(to top, var(--bg) 60%, rgba(246,248,247,0));
+    pointer-events:none;
+  }
+  .foot-in{
+    width:100%; max-width:390px; pointer-events:auto;
+    padding-left:max(16px, env(safe-area-inset-left,0px)); padding-right:max(16px, env(safe-area-inset-right,0px));
+    padding-bottom:calc(.75rem + env(safe-area-inset-bottom,0px)); padding-top:.75rem;
+  }
+  .tabbar{
+    display:flex; background:var(--card); border-top:1px solid var(--line); border-radius:18px;
+    box-shadow:var(--shadow); margin-top:.6rem; overflow:hidden;
+  }
+  .tabbar button{ flex:1; display:grid; justify-items:center; gap:.15rem; padding:.55rem .2rem; color:var(--ink-3); font-size:.9rem; font-weight:500; min-height:3.5rem; }
+  .tabbar button[aria-current="page"]{ color:var(--green); font-weight:700; background:var(--green-50); }
+
+  /* ── 공통 요소 ───────────────────────── */
+  .cta{
+    width:100%; min-height:3.5rem; border-radius:14px; background:var(--green); color:#fff;
+    font-size:1.1875rem; font-weight:700; letter-spacing:-.01em; box-shadow:0 4px 14px rgba(11,74,53,.22);
+    display:flex; align-items:center; justify-content:center; gap:.4rem; cursor:pointer;
+  }
+  .cta:disabled{ background:#BFCDC7; color:#fff; box-shadow:none; cursor:default; }
+  .cta.ghost{ background:var(--card); color:var(--green); border:2px solid var(--green); box-shadow:none; }
+  .card{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:1.125rem; }
+  .card + .card, .stack > * + *{ margin-top:.875rem; }
+  .stack{ display:block; }
+  h1{ font-family:var(--font-display); font-size:1.75rem; line-height:1.35; margin:.2rem 0 .5rem; text-wrap:balance; letter-spacing:-.02em; }
+  h2{ font-size:1.3125rem; margin:0 0 .5rem; letter-spacing:-.01em; text-wrap:balance; }
+  h3{ font-size:1.1875rem; margin:0 0 .35rem; }
+  p{ margin:0 0 .5rem; }
+  .sub{ color:var(--ink-2); font-size:1.0625rem; }
+  .small{ color:var(--ink-3); font-size:.9375rem; line-height:1.55; }
+  .ai{
+    display:inline-flex; align-items:center; gap:.25rem; background:var(--mint-50); color:var(--green);
+    border:1px solid var(--mint-100); border-radius:999px; padding:.1rem .5rem; font-size:.8125rem; font-weight:700; white-space:nowrap;
+  }
+  .ai::before{ content:"✦"; }
+  .pill{ display:inline-block; background:var(--green); color:#fff; border-radius:999px; padding:.15rem .6rem; font-size:.875rem; font-weight:700; }
+  .pill.mint{ background:var(--mint-50); color:var(--green); border:1px solid var(--mint-100); }
+  .pill.warn{ background:var(--warn-50); color:var(--warn-ink); border:1px solid #F3D4BD; }
+  .note{ background:var(--warn-50); border:1px solid #F3D4BD; border-radius:14px; padding:.8rem .9rem; color:var(--warn-ink); font-size:1rem; }
+  .info{ background:var(--mint-50); border:1px solid var(--mint-100); border-radius:14px; padding:.85rem .9rem; color:var(--green); font-size:1rem; }
+  .rows{ display:grid; gap:.5rem; }
+  .row{ display:flex; gap:.75rem; justify-content:space-between; align-items:baseline; }
+  .row dt{ color:var(--ink-3); font-size:1rem; }
+  .row dd{ margin:0; font-weight:700; font-variant-numeric:tabular-nums; }
+  .chips{ display:flex; flex-wrap:wrap; gap:.5rem; }
+  .chip{
+    min-height:3rem; padding:.5rem 1rem; border-radius:999px; border:2px solid var(--line);
+    background:var(--card); color:var(--ink-2); font-size:1.0625rem; font-weight:500;
+  }
+  .chip[aria-pressed="true"]{ border-color:var(--green); background:var(--green); color:#fff; font-weight:700; }
+  .big-opt{
+    width:100%; text-align:left; background:var(--card); border:2px solid var(--line); border-radius:var(--radius);
+    padding:1rem 1.125rem; min-height:4.5rem; display:flex; align-items:center; gap:.875rem; box-shadow:var(--shadow);
+  }
+  .big-opt + .big-opt{ margin-top:.75rem; }
+  .big-opt[aria-pressed="true"]{ border-color:var(--green); background:var(--green-50); }
+  .big-opt .ck{
+    width:1.75rem; height:1.75rem; border-radius:8px; border:2px solid var(--line); background:#fff; flex:0 0 auto;
+    display:grid; place-items:center; color:#fff; font-size:1rem; font-weight:700;
+  }
+  .big-opt[aria-pressed="true"] .ck{ background:var(--green); border-color:var(--green); }
+  .big-opt b{ display:block; font-size:1.125rem; }
+  .big-opt span{ display:block; color:var(--ink-3); font-size:.9375rem; }
+  .steps{ display:flex; align-items:center; gap:.6rem; margin-bottom:.9rem; }
+  .steps .track{ flex:1; height:.5rem; border-radius:999px; background:var(--mint-100); overflow:hidden; }
+  .steps .fill{ height:100%; background:var(--green); border-radius:999px; transition:width .3s ease; }
+  .steps b{ font-size:1rem; color:var(--green); font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .field{ display:block; }
+  .field label{ display:block; font-weight:700; margin-bottom:.4rem; font-size:1.0625rem; }
+  .field input, .field textarea{
+    width:100%; min-height:3.5rem; border:2px solid var(--line); border-radius:14px; background:#fff;
+    padding:.75rem .9rem; line-height:1.4;
+  }
+  .field textarea{ min-height:5.5rem; resize:vertical; }
+  .inline{ display:flex; gap:.6rem; align-items:stretch; }
+  .inline .cta{ width:auto; padding:0 1.1rem; flex:0 0 auto; font-size:1.0625rem; }
+  .divider{ height:1px; background:var(--line); margin:.9rem 0; border:0; }
+  .toast{
+    position:fixed; left:50%; transform:translateX(-50%); bottom:calc(8.5rem + env(safe-area-inset-bottom,0px));
+    background:var(--ink); color:#fff; padding:.75rem 1.1rem; border-radius:999px; font-size:1rem; font-weight:500;
+    z-index:40; box-shadow:0 8px 24px rgba(0,0,0,.22); max-width:min(340px, 88vw); text-align:center;
+  }
+  .skel{ display:flex; align-items:center; gap:.6rem; color:var(--ink-3); font-size:1.0625rem; }
+  .dot{ width:.75rem; height:.75rem; border-radius:50%; background:var(--mint); flex:0 0 auto; }
+  .dot.on{ background:var(--green); }
+  .spin{ width:1.25rem; height:1.25rem; border-radius:50%; border:3px solid var(--mint-100); border-top-color:var(--green); animation:sp .8s linear infinite; flex:0 0 auto; }
+  @keyframes sp{ to{ transform:rotate(360deg); } }
+  .fade{ animation:fi .35s ease both; }
+  @keyframes fi{ from{ opacity:0; transform:translateY(6px); } to{ opacity:1; transform:none; } }
+  .bars{ display:grid; gap:.6rem; }
+  .bar-line{ display:grid; grid-template-columns:5.2rem 1fr auto; gap:.6rem; align-items:center; font-size:1rem; }
+  .bar-line .t{ height:.75rem; background:var(--mint-100); border-radius:999px; overflow:hidden; min-width:0; }
+  .bar-line .f{ height:100%; background:var(--green); border-radius:999px; }
+  .bar-line em{ font-style:normal; font-weight:700; font-variant-numeric:tabular-nums; }
+  .vcard{
+    width:100%; text-align:left; background:var(--card); border:2px solid var(--line); border-radius:var(--radius);
+    padding:1.125rem; box-shadow:var(--shadow);
+  }
+  .vcard + .vcard{ margin-top:.875rem; }
+  .vcard[aria-pressed="true"]{ border-color:var(--green); box-shadow:0 0 0 4px var(--green-50), var(--shadow); }
+  .vcard .top{ display:flex; align-items:center; gap:.6rem; }
+  .vcard .nm{ font-size:1.3125rem; font-weight:700; }
+  .price{ font-size:1.625rem; font-weight:700; letter-spacing:-.02em; font-variant-numeric:tabular-nums; }
+  .meta{ display:grid; grid-template-columns:1fr 1fr; gap:.4rem .6rem; margin-top:.6rem; font-size:1rem; color:var(--ink-2); }
+  .cert{ display:flex; align-items:center; gap:.35rem; color:var(--green); font-size:.9375rem; font-weight:700; margin-top:.6rem; }
+  .linkrow{ display:flex; align-items:center; justify-content:space-between; gap:.5rem; margin-top:.75rem; padding-top:.75rem; border-top:1px dashed var(--line); color:var(--green); font-weight:700; font-size:1.0625rem; min-height:2.75rem; }
+  .photo{ border-radius:12px; overflow:hidden; border:1px solid var(--line); background:var(--green-50); }
+  .photo svg{ display:block; width:100%; height:auto; }
+  .photos{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:.5rem; }
+  .stair{ display:grid; grid-template-columns:repeat(4,1fr); gap:.5rem; align-items:end; margin:.5rem 0 .25rem; }
+  .stair .col{ display:grid; gap:.4rem; justify-items:center; }
+  .stair .b{ width:100%; border-radius:10px 10px 0 0; background:var(--mint); }
+  .stair .col:first-child .b{ background:var(--warn); }
+  .stair .col:last-child .b{ background:var(--green); }
+  .stair .lb{ font-size:.875rem; text-align:center; color:var(--ink-2); font-weight:700; line-height:1.3; }
+  .stair .vl{ font-size:.8125rem; text-align:center; color:var(--ink-3); line-height:1.3; }
+  .tl{ display:grid; gap:0; }
+  .tl .it{ display:grid; grid-template-columns:2rem 1fr; gap:.75rem; }
+  .tl .mk{ display:grid; justify-items:center; gap:.2rem; }
+  .tl .ci{ width:1.75rem; height:1.75rem; border-radius:50%; background:#fff; border:2px solid var(--line); display:grid; place-items:center; color:var(--ink-3); font-size:.9rem; font-weight:700; }
+  .tl .it.done .ci{ background:var(--mint); border-color:var(--mint); color:var(--green); }
+  .tl .it.now .ci{ background:var(--green); border-color:var(--green); color:#fff; }
+  .tl .ln{ width:3px; flex:1; background:var(--line); min-height:1.1rem; border-radius:2px; }
+  .tl .it.done .ln{ background:var(--mint); }
+  .tl .tx{ padding-bottom:.9rem; }
+  .tl .tx b{ font-size:1.0625rem; }
+  .tl .it.now .tx b{ color:var(--green); font-size:1.125rem; }
+  .stars{ display:flex; gap:.25rem; }
+  .stars button{ width:2.75rem; height:2.75rem; font-size:1.75rem; color:var(--line); display:grid; place-items:center; }
+  .stars button.on{ color:#E8A020; }
+  .ck-row{ display:flex; gap:.75rem; align-items:flex-start; width:100%; text-align:left; background:var(--card); border:2px solid var(--line); border-radius:14px; padding:.9rem 1rem; min-height:3.5rem; }
+  .ck-row[aria-pressed="true"]{ border-color:var(--green); background:var(--green-50); }
+  .ck-row .ck{ width:1.6rem; height:1.6rem; border-radius:6px; border:2px solid var(--line); background:#fff; display:grid; place-items:center; color:#fff; font-weight:700; flex:0 0 auto; }
+  .ck-row[aria-pressed="true"] .ck{ background:var(--green); border-color:var(--green); }
+  .ck-list{ list-style:none; margin:0; padding:0; display:grid; gap:.5rem; }
+  .ck-list li{ display:grid; grid-template-columns:1.5rem 1fr; gap:.5rem; font-size:1.0625rem; }
+  .ck-list .v{ color:var(--green); font-weight:700; }
+  .acc{ width:100%; display:flex; align-items:center; justify-content:space-between; gap:.5rem; min-height:3.5rem; font-weight:700; color:var(--green); font-size:1.0625rem; }
+  .ring{ display:grid; place-items:center; position:relative; }
+  .ring .mid{ position:absolute; text-align:center; }
+  .ring .n{ font-size:2.5rem; font-weight:700; color:var(--green); line-height:1; font-variant-numeric:tabular-nums; }
+  .map{ border-radius:14px; overflow:hidden; border:1px solid var(--line); background:#EEF4F1; }
+  .map svg{ display:block; width:100%; height:auto; }
+  .legend{ display:flex; flex-wrap:wrap; gap:.75rem; margin-top:.5rem; font-size:.9375rem; color:var(--ink-2); }
+  .legend i{ width:.8rem; height:.8rem; border-radius:50%; display:inline-block; margin-right:.3rem; vertical-align:-1px; }
+  .hero3{ display:grid; grid-template-columns:repeat(3,1fr); gap:.6rem; }
+  .hero3 .st{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:.8rem .5rem; text-align:center; box-shadow:var(--shadow); }
+  .hero3 .st svg{ margin:0 auto .3rem; display:block; color:var(--green); }
+  .hero3 .st b{ display:block; font-size:.9375rem; line-height:1.35; }
+  .hero3 .st span{ font-size:.75rem; color:var(--ink-3); font-weight:700; }
+  .sr{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+</style>
+
+<div class="app">
+  <header class="hdr" id="hdr"></header>
+  <main class="scroll" id="screen" tabindex="-1"></main>
+  <div class="foot"><div class="foot-in" id="foot"></div></div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ───────── 상태 ───────── */
+  var S = {
+    view:'onboard', tab:'home', big:false,
+    step:1, addr:'', loaded:false, loading:false,
+    pains:[], timing:null, budget:null, bill:false,
+    matching:0,            // 0:대기 1:로딩 2:완료
+    scoreOpen:false, joined:false,
+    vendor:'B', detail:null, quote:'',
+    evidOpen:false, agreed:false, confirmed:false,
+    stage:4, done:false, rating:0, review:'', billAfter:false
+  };
+
+  /* ───────── 목업 데이터 ───────── */
+  var BLD = { year:1996, age:30, use:'단독주택', str:'철근콘크리트', fl:'지상 3층', area:'284㎡' };
+  var PAINS = [
+    { id:'win',   t:'창호가 오래되었어요',  d:'창틀 사이로 바람이 들어와요',   tags:['창호 교체'] },
+    { id:'cold',  t:'겨울에 집이 추워요',    d:'난방을 해도 금방 식어요',       tags:['창호 교체','단열 보강'] },
+    { id:'bill',  t:'냉난방비가 많이 나와요', d:'여름·겨울 요금이 부담돼요',     tags:['창호 교체','단열 보강','냉난방 설비'] },
+    { id:'boil',  t:'보일러를 바꾸고 싶어요', d:'오래돼서 고장이 잦아요',        tags:['고효율 보일러'] }
+  ];
+  var TIMING = ['올해 안', '2026년 10~11월', '내년 상반기', '아직 모름'];
+  var BUDGET = ['1,000만 원 이하', '1,000~1,500만 원', '1,500~2,000만 원', '2,000만 원 이상', '잘 모르겠어요'];
+  var CL = { no:12, name:'고성능 창호 공동교체', houses:9, dist:'0.8km', when:'10~11월', qty:87, radius:'1.2km' };
+  var SCORE = 87;
+  var SCORE_ROWS = [
+    { k:'공사 종류', v:30, m:30 }, { k:'거리', v:18, m:20 }, { k:'희망 시기', v:20, m:20 },
+    { k:'건물 규모', v:8, m:10 },  { k:'공사 물량', v:9, m:10 }, { k:'시공 조건', v:7, m:10 }
+  ];
+  var MY_WIN = 10;
+  var VENDORS = [
+    { id:'A', name:'A업체', total:15900, days:14, works:42, as:2, rate:4.5, badges:[] },
+    { id:'B', name:'B업체', total:14800, days:16, works:35, as:3, rate:4.7, badges:['최저가','A/S 최장'] },
+    { id:'C', name:'C업체', total:15200, days:13, works:58, as:2, rate:4.6, badges:['실적 최다','최단 기간'] }
+  ];
+  var REVIEWS = {
+    A:[{w:'○○동 건물주',r:'4.5',t:'작업 전에 설명을 꼼꼼히 해주셔서 좋았어요. 마무리 청소도 깔끔했습니다.'},
+       {w:'△△동 건물주',r:'4.0',t:'일정이 하루 밀렸지만 연락을 미리 주셨어요.'}],
+    B:[{w:'○○동 건물주',r:'5.0',t:'창문 닫으면 바깥 소리가 확 줄었어요. 겨울에 덜 추울 것 같습니다.'},
+       {w:'□□동 건물주',r:'4.5',t:'A/S 기간이 길어서 마음이 놓입니다. 질문에도 바로 답해주셨어요.'}],
+    C:[{w:'▽▽동 건물주',r:'4.5',t:'공사 기간이 짧아서 생활 불편이 적었어요.'},
+       {w:'○○동 건물주',r:'4.5',t:'여러 집을 같이 해서 자재가 통일되니 보기도 좋네요.'}]
+  };
+  var GRANTS = [
+    { t:'2026 민간건축물 그린리모델링 이자지원사업', s:'신청 가능성 높음', tone:'ok',
+      rows:[['대상 공사','창호 교체'],['지원 내용','대출 이자 최대 5.5% 지원'],['신청 시기','사업 공고 기간 내']] },
+    { t:'그린리모델링 무료 컨설팅', s:'신청 가능', tone:'ok',
+      rows:[['지원 내용','전문가 방문 진단·개선안 제안'],['비용','무료'],['소요 기간','신청 후 약 2~3주']] }
+  ];
+  var STAGES = ['등록','AI 매칭','업체 입찰','업체 선택','현장 확인','계약','시공','완료'];
+  var STAGE_SUB = ['내 건물 정보 등록 완료','함께 공사할 이웃 9동 확인','3개 업체 입찰 완료','B업체 선택 완료',
+                   '10월 28일(화) 오전 10시 방문 예정','현장 확인 후 우리 집과 업체가 직접 계약','창호 교체 공사 약 16일','공사 후 점검·후기 작성'];
+  var OPEN_CL = [
+    { no:18, t:'보일러 공동교체', n:5, d:'1.0km', when:'11월 중', left:'모집 D-6' },
+    { no:21, t:'외벽 단열 공동공사', n:6, d:'1.1km', when:'내년 3월', left:'모집 D-12' }
+  ];
+
+  /* ───────── 유틸 ───────── */
+  function won(man){
+    if(man>=10000){
+      var eok=Math.floor(man/10000), rest=man%10000;
+      return rest ? eok+'억 '+rest.toLocaleString('ko-KR')+'만 원' : eok+'억 원';
+    }
+    return man.toLocaleString('ko-KR')+'만 원';
+  }
+  function perUnit(v){ return Math.round(v.total/CL.qty); }
+  function myShare(v){ return perUnit(v)*MY_WIN; }
+  function V(id){ for(var i=0;i<VENDORS.length;i++){ if(VENDORS[i].id===id) return VENDORS[i]; } return null; }
+  function tagsOf(){
+    var out=[];
+    PAINS.forEach(function(p){
+      if(S.pains.indexOf(p.id)<0) return;
+      p.tags.forEach(function(t){ if(out.indexOf(t)<0) out.push(t); });
+    });
+    return out;
+  }
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function toast(msg){
+    var old=document.querySelector('.toast'); if(old) old.remove();
+    var el=document.createElement('div'); el.className='toast'; el.setAttribute('role','status'); el.textContent=msg;
+    document.body.appendChild(el);
+    setTimeout(function(){ if(el.parentNode) el.remove(); }, 2300);
+  }
+  function ico(name){
+    var p={
+      home:'M3 11.5 12 4l9 7.5M5.5 10v10h13V10',
+      clip:'M9 4h6v3H9zM7 6H5v15h14V6h-2M9 12h6M9 16h4',
+      user:'M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4.5 21a7.5 7.5 0 0 1 15 0',
+      back:'M15 5l-7 7 7 7',
+      win:'M5 4h14v16H5zM12 4v16M5 12h14',
+      group:'M8 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM17 11a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM2.5 20c0-3 2.5-5 5.5-5s5.5 2 5.5 5M15 20c0-2.2 1-3.6 2.5-4.2',
+      gavel:'M4 20h10M6 13l6-6M9 4l7 7-3 3-7-7zM14 12l5 5',
+      plus:'M12 5v14M5 12h14', pen:'M4 20h4l11-11-4-4L4 16v4z',
+      type:'M6 7V5h12v2M12 5v14M9 19h6'
+    };
+    return '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="'+p[name]+'"/></svg>';
+  }
+  function ico28(name){
+    return ico(name).replace('width="24" height="24"','width="28" height="28"');
+  }
+
+  /* ───────── 조각 ───────── */
+  function stepsBar(n){
+    return '<div class="steps" role="group" aria-label="등록 진행 '+n+'단계 중 4단계">'+
+      '<b>'+n+'/4</b><div class="track"><div class="fill" style="width:'+(n/4*100)+'%"></div></div></div>';
+  }
+  function aiBadge(){ return '<span class="ai">AI 분석</span>'; }
+
+  function photoSvg(kind){
+    var sky = kind===0? '#CFE3DA' : (kind===1? '#DCE9E3' : '#C9DED5');
+    var frame = kind===1? '#0B4A35' : '#3B524A';
+    return '<svg viewBox="0 0 120 120" role="img" aria-label="시공 예시 이미지">'+
+      '<rect width="120" height="120" fill="'+sky+'"/>'+
+      '<rect x="18" y="20" width="84" height="80" rx="4" fill="#F6F8F7" stroke="'+frame+'" stroke-width="5"/>'+
+      '<path d="M60 20v80M18 60h84" stroke="'+frame+'" stroke-width="5"/>'+
+      '<rect x="26" y="28" width="26" height="24" fill="#E6F2EC"/>'+
+      '<rect x="68" y="28" width="26" height="24" fill="#E6F2EC"/>'+
+      (kind===2 ? '<rect x="26" y="68" width="26" height="24" fill="#8FD3B0"/>' : '<rect x="26" y="68" width="26" height="24" fill="#E6F2EC"/>')+
+      '<rect x="68" y="68" width="26" height="24" fill="#E6F2EC"/>'+
+      '</svg>';
+  }
+
+  function mapSvg(){
+    var pts=[[86,52],[142,38],[198,60],[232,104],[196,150],[140,164],[84,140],[58,98]];
+    var dots='';
+    pts.forEach(function(p,i){
+      dots += '<circle cx="'+p[0]+'" cy="'+p[1]+'" r="9" fill="#8FD3B0" stroke="#0B4A35" stroke-width="2"/>'+
+              '<text x="'+p[0]+'" y="'+(p[1]+4)+'" font-size="9" font-weight="700" fill="#0B4A35" text-anchor="middle">'+(i+1)+'</text>';
+    });
+    return '<svg viewBox="0 0 300 200" role="img" aria-label="내 건물과 참여 후보 8동의 위치, 반경 1.2km">'+
+      '<rect width="300" height="200" fill="#EEF4F1"/>'+
+      '<path d="M0 70h300M0 140h300M90 0v200M210 0v200" stroke="#DCE5E0" stroke-width="6"/>'+
+      '<circle cx="150" cy="100" r="86" fill="#8FD3B0" fill-opacity=".16" stroke="#0B4A35" stroke-width="2" stroke-dasharray="7 6"/>'+
+      dots+
+      '<circle cx="150" cy="100" r="14" fill="#0B4A35"/>'+
+      '<path d="M144 101l5 5 8-9" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'+
+      '<text x="150" y="196" font-size="11" font-weight="700" fill="#0B4A35" text-anchor="middle">반경 '+CL.radius+' 안</text>'+
+      '</svg>';
+  }
+
+  function ringSvg(n){
+    var r=52, c=2*Math.PI*r, off=c*(1-n/100);
+    return '<div class="ring">'+
+      '<svg width="140" height="140" viewBox="0 0 140 140" aria-hidden="true">'+
+      '<circle cx="70" cy="70" r="'+r+'" fill="none" stroke="#CFEBDD" stroke-width="14"/>'+
+      '<circle cx="70" cy="70" r="'+r+'" fill="none" stroke="#0B4A35" stroke-width="14" stroke-linecap="round" '+
+      'stroke-dasharray="'+c.toFixed(1)+'" stroke-dashoffset="'+off.toFixed(1)+'" transform="rotate(-90 70 70)"/>'+
+      '</svg>'+
+      '<div class="mid"><div class="n">'+n+'</div><div class="small" style="font-weight:700">／100점</div></div>'+
+      '</div>';
+  }
+
+  /* ───────── 화면 정의 ───────── */
+  function screen(){
+    var v=S.view;
+    if(v==='onboard') return scOnboard();
+    if(v==='register') return scRegister();
+    if(v==='matching') return scMatching();
+    if(v==='bids') return scBids();
+    if(v==='vendor') return scVendor();
+    if(v==='support') return scSupport();
+    if(v==='complete') return scComplete();
+    if(v==='tab'){
+      if(S.tab==='home') return scHome();
+      if(S.tab==='my') return scMy();
+      return scInfo();
+    }
+    return scOnboard();
+  }
+
+  /* S0 시작 */
+  function scOnboard(){
+    return {
+      brand:true,
+      body:
+        '<h1>우리 집도 함께<br>고칠 수 있을까요?</h1>'+
+        '<p class="sub" style="margin-bottom:1.1rem">주소만 입력하면 함께 공사할 이웃 건물을 AI가 찾아드려요.</p>'+
+        '<div class="hero3">'+
+          '<div class="st">'+ico28('pen')+'<b>내 건물<br>등록</b><span>3분</span></div>'+
+          '<div class="st">'+ico28('group')+'<b>AI가 이웃<br>찾기</b><span>자동</span></div>'+
+          '<div class="st">'+ico28('gavel')+'<b>업체 경쟁<br>견적</b><span>비교</span></div>'+
+        '</div>'+
+        '<div class="card" style="margin-top:1rem">'+
+          '<h2 style="font-family:var(--font-display)">혼자 고치면 비싸고,<br>모아 고치면 싸요</h2>'+
+          '<p class="sub">이웃 건물의 창호·단열·보일러 공사 수요를 하나로 묶어 업체끼리 경쟁 견적을 받습니다. 받을 수 있는 지원제도도 함께 찾아드려요.</p>'+
+          '<hr class="divider">'+
+          '<ul class="ck-list">'+
+            '<li><span class="v">✓</span><span>같은 성능 기준의 자재로 견적을 받아요</span></li>'+
+            '<li><span class="v">✓</span><span>가격은 업체 경쟁입찰로 정해져요</span></li>'+
+            '<li><span class="v">✓</span><span>계약은 우리 집과 업체가 직접 맺어요</span></li>'+
+          '</ul>'+
+        '</div>'+
+        '<p class="small" style="margin-top:.9rem">화면에 보이는 금액·점수는 시연용 가상 예시예요.</p>',
+      cta:{ label:'3분 만에 시작하기', act:'start' }
+    };
+  }
+
+  /* S1 등록 */
+  function scRegister(){
+    var n=S.step, body='', cta=null, back=true;
+
+    if(n===1){
+      body = stepsBar(1)+
+        '<h2>공사할 건물 주소를 알려주세요</h2>'+
+        '<p class="sub">주소만 넣으면 건축물대장에서 건물 정보를 자동으로 가져와요.</p>'+
+        '<div class="card" style="margin-top:.9rem">'+
+          '<div class="field"><label for="addr">건물 주소</label>'+
+          '<div class="inline">'+
+            '<input id="addr" data-inp="addr" value="'+esc(S.addr)+'" placeholder="예) ○○시 ○○구 ○○로 12-3" autocomplete="off">'+
+            '<button class="cta" data-act="load">불러오기</button>'+
+          '</div></div>'+
+          (S.loading ? '<div class="info" style="margin-top:.9rem"><span class="spin" style="display:inline-block;vertical-align:-4px;margin-right:.5rem"></span>건축물대장을 확인하고 있어요…</div>' : '')+
+          (S.loaded ?
+            '<div class="fade" style="margin-top:.9rem">'+
+            '<div class="info" style="font-weight:700">건축물대장에서 자동으로 불러왔어요 ✓</div>'+
+            '<dl class="rows" style="margin-top:.9rem">'+
+              '<div class="row"><dt>사용승인</dt><dd>'+BLD.year+'년 (올해로 '+BLD.age+'년)</dd></div>'+
+              '<div class="row"><dt>건물 종류</dt><dd>'+BLD.use+'</dd></div>'+
+              '<div class="row"><dt>구조</dt><dd>'+BLD.str+'</dd></div>'+
+              '<div class="row"><dt>층수</dt><dd>'+BLD.fl+'</dd></div>'+
+              '<div class="row"><dt>연면적</dt><dd>'+BLD.area+'</dd></div>'+
+            '</dl>'+
+            '<div class="note" style="margin-top:.9rem"><b>지은 지 30년이 지난 건물이에요.</b><br>그린리모델링 지원 대상일 가능성이 있어요. 뒤에서 함께 확인해 드려요.</div>'+
+            '</div>' : '')+
+        '</div>';
+      cta={ label:'다음', act:'next', off:!S.loaded };
+    }
+
+    if(n===2){
+      var tg=tagsOf();
+      body = stepsBar(2)+
+        '<h2>어떤 점이 불편하세요?</h2>'+
+        '<p class="sub">해당되는 것을 모두 골라 주세요. 여러 개 괜찮아요.</p>'+
+        '<div style="margin-top:.9rem">'+
+        PAINS.map(function(p){
+          var on=S.pains.indexOf(p.id)>=0;
+          return '<button class="big-opt" data-act="pain:'+p.id+'" aria-pressed="'+on+'">'+
+            '<span class="ck" aria-hidden="true">'+(on?'✓':'')+'</span>'+
+            '<span><b>'+p.t+'</b><span>'+p.d+'</span></span></button>';
+        }).join('')+
+        '</div>'+
+        (tg.length ?
+          '<div class="card fade" style="margin-top:1rem">'+
+          '<div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.6rem">'+aiBadge()+'<b>AI가 이렇게 이해했어요</b></div>'+
+          '<div class="chips">'+tg.map(function(t){ return '<span class="pill mint">'+t+'</span>'; }).join('')+'</div>'+
+          '<p class="small" style="margin:.7rem 0 0">고른 내용을 공사 종류로 바꿔 같은 공사를 원하는 이웃을 찾아요.</p>'+
+          '</div>' : '');
+      cta={ label:'다음', act:'next', off:S.pains.length===0 };
+    }
+
+    if(n===3){
+      body = stepsBar(3)+
+        '<h2>언제쯤, 얼마 정도 생각하세요?</h2>'+
+        '<p class="sub">아직 정하지 못했다면 "모름"을 골라도 괜찮아요.</p>'+
+        '<div class="card" style="margin-top:.9rem">'+
+          '<h3>공사 희망 시기</h3>'+
+          '<div class="chips">'+TIMING.map(function(t,i){
+            return '<button class="chip" data-act="timing:'+i+'" aria-pressed="'+(S.timing===i)+'">'+t+'</button>';
+          }).join('')+'</div>'+
+        '</div>'+
+        '<div class="card">'+
+          '<h3>생각하는 예산</h3>'+
+          '<div class="chips">'+BUDGET.map(function(t,i){
+            return '<button class="chip" data-act="budget:'+i+'" aria-pressed="'+(S.budget===i)+'">'+t+'</button>';
+          }).join('')+'</div>'+
+          '<p class="small" style="margin:.8rem 0 0">예산은 이웃을 묶을 때 참고만 해요. 실제 금액은 업체 입찰 후에 정해져요.</p>'+
+        '</div>';
+      cta={ label:'다음', act:'next', off:(S.timing===null||S.budget===null) };
+    }
+
+    if(n===4){
+      var tg2=tagsOf();
+      body = stepsBar(4)+
+        '<h2>입력한 내용을 확인해 주세요</h2>'+
+        '<div class="card" style="margin-top:.9rem">'+
+          '<dl class="rows">'+
+            '<div class="row"><dt>주소</dt><dd style="text-align:right">'+esc(S.addr||'○○시 ○○구 ○○로 12-3')+'</dd></div>'+
+            '<div class="row"><dt>건물</dt><dd>'+BLD.year+'년 · '+BLD.use+' · '+BLD.fl+'</dd></div>'+
+            '<div class="row"><dt>희망 시기</dt><dd>'+TIMING[S.timing===null?3:S.timing]+'</dd></div>'+
+            '<div class="row"><dt>예산</dt><dd>'+BUDGET[S.budget===null?4:S.budget]+'</dd></div>'+
+          '</dl>'+
+          '<hr class="divider">'+
+          '<div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem">'+aiBadge()+'<b>원하는 공사</b></div>'+
+          '<div class="chips">'+tg2.map(function(t){ return '<span class="pill mint">'+t+'</span>'; }).join('')+'</div>'+
+        '</div>'+
+        '<div class="card">'+
+          '<h3>에너지 사용량 <span class="pill mint">선택</span></h3>'+
+          '<p class="sub">관리비·가스 고지서 사진을 올리면 공사 후 절감액을 더 정확히 알려드려요.</p>'+
+          '<label class="cta ghost" for="bill" style="margin-top:.7rem">'+(S.bill?'사진 1장 첨부됨 ✓':'고지서 사진 올리기')+'</label>'+
+          '<input id="bill" type="file" accept="image/*" class="sr" data-inp="bill">'+
+          '<p class="small" style="margin:.7rem 0 0">올리지 않아도 다음으로 넘어갈 수 있어요.</p>'+
+        '</div>';
+      cta={ label:'함께 공사할 이웃 찾기', act:'find' };
+    }
+
+    return { title:'내 건물 등록', back:back, body:body, cta:cta };
+  }
+
+  /* S2 AI 매칭 */
+  function scMatching(){
+    if(S.matching<2){
+      var lines=[
+        ['주변 건물 100동 확인 중', 0],
+        ['조건이 맞는 25동 골라내는 중', 1],
+        ['최적 조합(공동공사 묶음) 계산 중', 2]
+      ];
+      return { title:'AI 매칭', back:true, body:
+        '<div class="card" style="text-align:center">'+
+          '<div class="spin" style="margin:.5rem auto 1rem;width:2.5rem;height:2.5rem;border-width:5px"></div>'+
+          '<h2>함께 공사할 이웃을 찾고 있어요</h2>'+
+          '<p class="sub">잠시만 기다려 주세요</p>'+
+        '</div>'+
+        '<div class="card">'+
+          '<div class="rows" id="steps-list">'+
+          lines.map(function(l,i){
+            return '<div class="skel" data-i="'+i+'" style="opacity:'+(i===0?1:.35)+'"><span class="dot'+(i===0?' on':'')+'"></span><span>'+l[0]+'</span></div>';
+          }).join('')+
+          '</div>'+
+          '<p class="small" style="margin:.9rem 0 0">AI는 "누구와 함께 묶을지"만 계산해요. 가격은 업체들의 경쟁입찰로 정해져요.</p>'+
+        '</div>', cta:null };
+    }
+
+    var sum=0; SCORE_ROWS.forEach(function(r){ sum+=r.v; });
+    var body =
+      '<h2>내 주변에 함께 공사하기 좋은 건물이 있어요</h2>'+
+      '<div class="card" style="text-align:center;margin-top:.9rem">'+
+        '<div style="display:flex;justify-content:center;gap:.5rem;align-items:center;margin-bottom:.4rem">'+aiBadge()+'<b>공동공사 적합도</b></div>'+
+        ringSvg(SCORE)+
+        '<p class="sub" style="margin:.7rem 0 0">같은 공사를 원하는 이웃이 가까이 모여 있어 묶기 좋은 조건이에요.</p>'+
+        '<button class="acc" data-act="score" aria-expanded="'+S.scoreOpen+'" style="margin-top:.4rem">'+
+          '<span>점수 자세히 보기</span><span aria-hidden="true">'+(S.scoreOpen?'▲':'▼')+'</span></button>'+
+        (S.scoreOpen ?
+          '<div class="fade" style="text-align:left">'+
+          '<div class="bars">'+SCORE_ROWS.map(function(r){
+            return '<div class="bar-line"><span>'+r.k+'</span><span class="t"><span class="f" style="width:'+(r.v/r.m*100)+'%"></span></span><em>'+r.v+'/'+r.m+'</em></div>';
+          }).join('')+'</div>'+
+          '<p class="small" style="margin:.8rem 0 0">항목 합계 '+sum+'점 · 같은 시기에 공사가 몰리는 정도를 반영해 보정한 종합 점수가 '+SCORE+'점이에요.</p>'+
+          '</div>' : '')+
+      '</div>'+
+      '<div class="card">'+
+        '<div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-bottom:.6rem">'+
+          '<span class="pill">Cluster #'+CL.no+'</span><b>'+CL.name+'</b></div>'+
+        '<dl class="rows">'+
+          '<div class="row"><dt>참여 후보</dt><dd>'+CL.houses+'동</dd></div>'+
+          '<div class="row"><dt>평균 거리</dt><dd>'+CL.dist+'</dd></div>'+
+          '<div class="row"><dt>희망 시기</dt><dd>'+CL.when+'</dd></div>'+
+          '<div class="row"><dt>예상 총 물량</dt><dd>창호 '+CL.qty+'개</dd></div>'+
+        '</dl>'+
+        '<div class="map" style="margin-top:.9rem">'+mapSvg()+'</div>'+
+        '<div class="legend">'+
+          '<span><i style="background:#0B4A35"></i>내 건물</span>'+
+          '<span><i style="background:#8FD3B0;border:1px solid #0B4A35"></i>참여 후보 8동</span>'+
+          '<span><i style="background:transparent;border:1px dashed #0B4A35"></i>반경 '+CL.radius+'</span>'+
+        '</div>'+
+      '</div>'+
+      '<div class="card">'+
+        '<div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.6rem">'+aiBadge()+'<b>함께 묶인 이유</b></div>'+
+        '<ul class="ck-list">'+
+          '<li><span class="v">✓</span><span>같은 창호 교체를 원해요</span></li>'+
+          '<li><span class="v">✓</span><span>공사하고 싶은 시기가 비슷해요</span></li>'+
+          '<li><span class="v">✓</span><span>거리가 가까워 자재·장비 이동비를 아껴요</span></li>'+
+          '<li><span class="v">✓</span><span>건물 규모가 비슷해 공사 방식이 같아요</span></li>'+
+        '</ul>'+
+      '</div>'+
+      '<div class="info"><b>싸기만 한 공사가 아니에요.</b><br>이 묶음은 그린리모델링 성능 기준을 충족하는 같은 창호 사양으로 견적을 받아요.</div>';
+
+    if(S.joined){
+      body +=
+        '<div class="card fade" style="margin-top:.875rem;border-color:var(--green)">'+
+          '<div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">'+
+            '<span class="pill">참여 중</span><span class="pill warn">마감 D-3</span></div>'+
+          '<h3 style="margin-top:.7rem">현재 '+CL.houses+'동 참여 · 업체 입찰 진행 중</h3>'+
+          '<p class="sub" style="margin:0">입찰이 끝나면 알림으로 알려드려요.</p>'+
+        '</div>';
+    }
+
+    return {
+      title:'AI 매칭 결과', back:true, body:body,
+      cta: S.joined ? { label:'입찰 결과 보기', act:'bids' } : { label:'공동견적 참여하기', act:'join' }
+    };
+  }
+
+  /* S3 공동견적 비교 */
+  function scBids(){
+    var sel=V(S.vendor);
+    var q=parseInt(String(S.quote).replace(/[^0-9]/g,''),10);
+    var diffHtml='';
+    if(S.quote && !isNaN(q) && q>0){
+      var d=q-myShare(sel);
+      if(d>0) diffHtml='<div class="info fade" style="margin-top:.7rem"><b>따로 받은 견적보다 약 '+won(d)+' 낮아요.</b><br>공동견적 예상 금액 기준이에요.</div>';
+      else if(d<0) diffHtml='<div class="note fade" style="margin-top:.7rem"><b>따로 받은 견적이 약 '+won(-d)+' 더 낮아요.</b><br>자재 사양과 A/S 조건도 함께 비교해 보세요.</div>';
+      else diffHtml='<div class="info fade" style="margin-top:.7rem">두 금액이 거의 같아요.</div>';
+    }
+
+    var body =
+      '<div class="card">'+
+        '<h2 style="margin:0">3개 업체가 입찰했어요</h2>'+
+        '<p class="sub" style="margin:.35rem 0 0">Cluster #'+CL.no+' · '+CL.houses+'동 전체 금액 기준</p>'+
+      '</div>'+
+      '<div class="note" style="margin-top:.875rem">가격만 보지 마세요. 시공실적·공사기간·A/S를 함께 비교하세요.</div>'+
+      '<div style="margin-top:.875rem">'+
+      VENDORS.map(function(v){
+        var on=(S.vendor===v.id);
+        return '<button class="vcard" data-act="pick:'+v.id+'" aria-pressed="'+on+'">'+
+          '<div class="top"><span class="nm">'+v.name+'</span>'+
+            (on?'<span class="pill">선택됨 ✓</span>':'')+
+          '</div>'+
+          (v.badges.length? '<div class="chips" style="margin-top:.5rem">'+v.badges.map(function(b){ return '<span class="pill mint">'+b+'</span>'; }).join('')+'</div>':'')+
+          '<div class="price" style="margin-top:.5rem">'+won(v.total)+'</div>'+
+          '<div class="meta">'+
+            '<span>공사 기간 <b>'+v.days+'일</b></span>'+
+            '<span>시공 실적 <b>'+v.works+'건</b></span>'+
+            '<span>A/S 보증 <b>'+v.as+'년</b></span>'+
+            '<span>평점 <b>★ '+v.rate.toFixed(1)+'</b></span>'+
+          '</div>'+
+          '<div class="cert">'+'<span aria-hidden="true">✓</span>그린리모델링 등록 사업자</div>'+
+          '<div class="linkrow" data-act="vendor:'+v.id+'"><span>'+v.name+' 자세히 보기</span><span aria-hidden="true">›</span></div>'+
+        '</button>';
+      }).join('')+
+      '</div>'+
+      '<div class="card" style="border-color:var(--green)">'+
+        '<div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.6rem">'+aiBadge()+'<b>내 건물 예상 부담금</b></div>'+
+        '<dl class="rows">'+
+          '<div class="row"><dt>'+sel.name+' 입찰가 ('+CL.houses+'동)</dt><dd>'+won(sel.total)+'</dd></div>'+
+          '<div class="row"><dt>전체 물량</dt><dd>창호 '+CL.qty+'개</dd></div>'+
+          '<div class="row"><dt>창호 1개당</dt><dd>약 '+won(perUnit(sel))+'</dd></div>'+
+          '<div class="row"><dt>내 창호</dt><dd>'+MY_WIN+'개</dd></div>'+
+        '</dl>'+
+        '<hr class="divider">'+
+        '<div class="row" style="align-items:center">'+
+          '<span style="font-weight:700">내 예상 부담금</span>'+
+          '<span class="price" style="color:var(--green)">약 '+won(myShare(sel))+'</span>'+
+        '</div>'+
+        '<p class="small" style="margin:.4rem 0 0">입찰 후 예상 금액이에요. 최종 금액은 현장 확인 후 계약할 때 확정돼요.</p>'+
+        '<hr class="divider">'+
+        '<div class="field"><label for="quote">내가 따로 받은 견적이 있다면 입력해 보세요</label>'+
+          '<div class="inline"><input id="quote" data-inp="quote" inputmode="numeric" value="'+esc(S.quote)+'" placeholder="예) 2300">'+
+          '<span style="align-self:center;font-weight:700">만 원</span></div></div>'+
+        '<div id="diff">'+diffHtml+'</div>'+
+      '</div>';
+
+    return { title:'공동견적 비교', back:true, body:body, cta:{ label:'이 업체로 선택하기', act:'toSupport' } };
+  }
+
+  /* S3-1 업체 상세 */
+  function scVendor(){
+    var v=V(S.detail)||VENDORS[1];
+    var rv=REVIEWS[v.id];
+    var body =
+      '<div class="card">'+
+        '<div class="top" style="display:flex;align-items:center;gap:.6rem"><span class="nm" style="font-size:1.5rem;font-weight:700">'+v.name+'</span>'+
+        (v.badges.length?'<span class="pill mint">'+v.badges[0]+'</span>':'')+'</div>'+
+        '<div class="cert">'+'<span aria-hidden="true">✓</span>그린리모델링 등록 사업자</div>'+
+        '<div class="price" style="margin-top:.6rem">'+won(v.total)+'</div>'+
+        '<p class="small" style="margin:.2rem 0 0">Cluster #'+CL.no+' · '+CL.houses+'동 전체 금액</p>'+
+        '<hr class="divider">'+
+        '<dl class="rows">'+
+          '<div class="row"><dt>공사 기간</dt><dd>'+v.days+'일</dd></div>'+
+          '<div class="row"><dt>시공 실적</dt><dd>'+v.works+'건</dd></div>'+
+          '<div class="row"><dt>A/S 보증</dt><dd>'+v.as+'년</dd></div>'+
+          '<div class="row"><dt>평점</dt><dd>★ '+v.rate.toFixed(1)+'</dd></div>'+
+          '<div class="row"><dt>창호 1개당</dt><dd>약 '+won(perUnit(v))+'</dd></div>'+
+        '</dl>'+
+      '</div>'+
+      '<div class="card">'+
+        '<h3>시공 사진</h3>'+
+        '<div class="photos">'+
+          '<div class="photo">'+photoSvg(0)+'</div>'+
+          '<div class="photo">'+photoSvg(1)+'</div>'+
+          '<div class="photo">'+photoSvg(2)+'</div>'+
+        '</div>'+
+        '<p class="small" style="margin:.5rem 0 0">시연용 예시 이미지예요.</p>'+
+      '</div>'+
+      '<div class="card">'+
+        '<h3>공사 후기 2개</h3>'+
+        rv.map(function(r,i){
+          return '<div style="'+(i?'margin-top:.8rem;padding-top:.8rem;border-top:1px solid var(--line)':'')+'">'+
+            '<div style="display:flex;gap:.5rem;align-items:center"><b>★ '+r.r+'</b><span class="small">'+r.w+'</span></div>'+
+            '<p style="margin:.3rem 0 0">'+r.t+'</p></div>';
+        }).join('')+
+      '</div>';
+    return { title:v.name+' 정보', back:true, body:body, cta:{ label:'이 업체로 선택하기', act:'pickFromDetail' } };
+  }
+
+  /* S4 지원사업 + 최종 결정 */
+  function scSupport(){
+    var sel=V(S.vendor);
+    var alone=2300, together=myShare(sel);
+    var stair=[
+      { lb:'혼자 공사', vl:'개별 견적', val:'약 '+won(alone), h:100, cls:'' },
+      { lb:'공동발주', vl:'업체 경쟁입찰', val:'약 '+won(together), h:Math.round(together/alone*100), cls:'' },
+      { lb:'이자 지원', vl:'최대 5.5%', val:'이자 부담 ↓', h:58, cls:'' },
+      { lb:'최종 자기부담', vl:'심사·계약 후 확정', val:'더 낮아져요', h:48, cls:'' }
+    ];
+
+    var body =
+      '<div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">'+aiBadge()+'</div>'+
+      '<h2 style="margin-top:.4rem">받을 수 있는 지원제도를 찾았어요</h2>'+
+      '<p class="sub">우리 집 건물 정보와 공사 종류를 공고 요건과 맞춰 봤어요.</p>'+
+      GRANTS.map(function(g){
+        return '<div class="card" style="margin-top:.875rem">'+
+          '<div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;margin-bottom:.5rem">'+
+            '<span class="pill">'+g.s+'</span></div>'+
+          '<h3>'+g.t+'</h3>'+
+          '<dl class="rows" style="margin-top:.5rem">'+
+            g.rows.map(function(r){ return '<div class="row"><dt>'+r[0]+'</dt><dd style="text-align:right">'+r[1]+'</dd></div>'; }).join('')+
+          '</dl></div>';
+      }).join('')+
+      '<div class="card">'+
+        '<button class="acc" data-act="evid" aria-expanded="'+S.evidOpen+'"><span>왜 해당되는지 근거 보기</span><span aria-hidden="true">'+(S.evidOpen?'▲':'▼')+'</span></button>'+
+        (S.evidOpen ?
+          '<div class="fade">'+
+          '<ul class="ck-list">'+
+            '<li><span class="v">✓</span><span>사용승인 '+BLD.age+'년 경과 ('+BLD.year+'년)</span></li>'+
+            '<li><span class="v">✓</span><span>기존 민간건축물 ('+BLD.use+')</span></li>'+
+            '<li><span class="v">✓</span><span>공사 종류가 창호 교체</span></li>'+
+          '</ul>'+
+          '<p class="small" style="margin:.7rem 0 0">위 세 가지가 공고문 신청 요건과 일치해요.</p></div>' : '')+
+        '<p class="small" style="margin:.7rem 0 0">최종 지원 여부는 해당 기관 심사로 결정돼요.</p>'+
+      '</div>'+
+      '<div class="card">'+
+        '<h3>내 부담이 줄어드는 순서</h3>'+
+        '<div class="stair">'+
+          stair.map(function(s){
+            return '<div class="col"><div class="vl">'+s.val+'</div><div class="b" style="height:'+Math.max(26,s.h*1.1)+'px"></div><div class="lb">'+s.lb+'</div><div class="vl">'+s.vl+'</div></div>';
+          }).join('')+
+        '</div>'+
+        '<p class="small" style="margin:.6rem 0 0">막대 높이는 개념을 보여주는 그림이에요. 금액은 모두 예상이고, 입찰·심사·계약을 거쳐 확정돼요.</p>'+
+      '</div>'+
+      '<div class="card">'+
+        '<button class="ck-row" data-act="agree" aria-pressed="'+S.agreed+'" style="border:0;padding:0;background:none;min-height:0">'+
+          '<span class="ck" aria-hidden="true">'+(S.agreed?'✓':'')+'</span>'+
+          '<span><b>계약은 우리 집과 업체가 따로 맺어요</b><br><span class="small">그린토피아는 이웃을 묶고 견적을 받아주는 역할만 해요. 공사 계약의 당사자는 건물주와 업체예요.</span></span>'+
+        '</button>'+
+      '</div>';
+
+    return { title:'지원제도 확인', back:true, body:body, cta:{ label:'공동공사 참여 확정하기', act:'confirm', off:!S.agreed } };
+  }
+
+  /* 완료 */
+  function scComplete(){
+    return { title:'참여 확정', back:false, body:
+      '<div class="card" style="text-align:center;padding-block:1.6rem">'+
+        '<div style="width:4.5rem;height:4.5rem;border-radius:50%;background:var(--green);display:grid;place-items:center;margin:0 auto .9rem">'+
+          '<svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4 10-11"/></svg>'+
+        '</div>'+
+        '<h2>참여가 확정됐어요!</h2>'+
+        '<p class="sub">현장 확인 일정을 알려드릴게요.</p>'+
+        '<hr class="divider">'+
+        '<dl class="rows" style="text-align:left">'+
+          '<div class="row"><dt>묶음</dt><dd>Cluster #'+CL.no+'</dd></div>'+
+          '<div class="row"><dt>선택한 업체</dt><dd>'+V(S.vendor).name+'</dd></div>'+
+          '<div class="row"><dt>내 예상 부담금</dt><dd>약 '+won(myShare(V(S.vendor)))+'</dd></div>'+
+          '<div class="row"><dt>다음 일정</dt><dd>10월 28일(화) 오전 10시</dd></div>'+
+        '</dl>'+
+      '</div>'+
+      '<div class="info">현장 확인에서 창 크기와 설치 조건을 재고, 그 뒤 계약할 때 금액이 확정돼요.</div>',
+      cta:{ label:'내 공사 보기', act:'toMy' } };
+  }
+
+  /* 홈 탭 */
+  function scHome(){
+    var sel=V(S.vendor);
+    var started = S.confirmed;
+    var body =
+      '<h2 style="font-family:var(--font-display)">안녕하세요</h2>'+
+      '<p class="sub">혼자 고치면 비싸고, 모아 고치면 싸요.</p>'+
+      (started ?
+        '<div class="card" style="margin-top:.9rem;border-color:var(--green)">'+
+          '<div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap"><span class="pill">진행 중</span><span class="small">Cluster #'+CL.no+'</span></div>'+
+          '<h3 style="margin-top:.6rem">'+CL.name+'</h3>'+
+          '<dl class="rows">'+
+            '<div class="row"><dt>현재 단계</dt><dd>'+STAGES[S.stage]+'</dd></div>'+
+            '<div class="row"><dt>선택 업체</dt><dd>'+sel.name+'</dd></div>'+
+            '<div class="row"><dt>내 예상 부담금</dt><dd>약 '+won(myShare(sel))+'</dd></div>'+
+          '</dl>'+
+          '<button class="cta ghost" data-act="toMy" style="margin-top:.8rem">진행 상황 보기</button>'+
+        '</div>'
+        :
+        '<div class="card" style="margin-top:.9rem">'+
+          '<h3>아직 등록한 건물이 없어요</h3>'+
+          '<p class="sub">주소만 넣으면 함께 공사할 이웃을 AI가 찾아드려요.</p>'+
+          '<button class="cta" data-act="start" style="margin-top:.8rem">내 건물 등록하기</button>'+
+        '</div>')+
+      '<h3 style="margin:1.4rem 0 .6rem">우리 동네 지금 모집 중인 공동공사</h3>'+
+      OPEN_CL.map(function(c){
+        return '<div class="card">'+
+          '<div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">'+
+            '<span class="pill mint">Cluster #'+c.no+'</span><span class="pill warn">'+c.left+'</span></div>'+
+          '<h3 style="margin-top:.6rem">'+c.t+'</h3>'+
+          '<dl class="rows">'+
+            '<div class="row"><dt>현재 참여</dt><dd>'+c.n+'동</dd></div>'+
+            '<div class="row"><dt>평균 거리</dt><dd>'+c.d+'</dd></div>'+
+            '<div class="row"><dt>희망 시기</dt><dd>'+c.when+'</dd></div>'+
+          '</dl>'+
+          '<button class="cta ghost" data-act="interest:'+c.no+'" style="margin-top:.8rem">관심 있어요</button>'+
+        '</div>';
+      }).join('')+
+      '<p class="small" style="margin-top:.9rem">모집 중인 묶음은 참여 동수가 모이면 업체 입찰이 시작돼요.</p>';
+    return { brandTitle:'그린토피아', body:body, tabs:true, cta:null };
+  }
+
+  /* 내 공사 탭 */
+  function scMy(){
+    if(!S.confirmed){
+      return { brandTitle:'내 공사', tabs:true, body:
+        '<div class="card" style="text-align:center;padding-block:1.6rem">'+
+          '<h2>진행 중인 공사가 없어요</h2>'+
+          '<p class="sub">내 건물을 등록하면 여기에서 진행 상황을 볼 수 있어요.</p>'+
+          '<button class="cta" data-act="start" style="margin-top:1rem">내 건물 등록하기</button>'+
+        '</div>', cta:null };
+    }
+
+    var sel=V(S.vendor);
+    var body =
+      '<div class="card">'+
+        '<div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap"><span class="pill">Cluster #'+CL.no+'</span><span class="pill mint">'+sel.name+'</span></div>'+
+        '<h2 style="margin-top:.6rem">'+CL.name+'</h2>'+
+        '<p class="sub" style="margin:0">내 예상 부담금 약 '+won(myShare(sel))+'</p>'+
+      '</div>'+
+      '<div class="card" style="border-color:var(--green)">'+
+        '<div class="small" style="font-weight:700;color:var(--green)">지금 할 일 한 가지</div>'+
+        '<h3 style="margin-top:.3rem">'+(S.done ? '공사 결과를 남겨 주세요' : STAGE_SUB[S.stage])+'</h3>'+
+        '<p class="sub" style="margin:0">'+(S.done ? '별점과 한 줄 후기를 남기면 끝이에요.' : '집에 계셔 주시면 업체가 창 크기를 재고 설치 조건을 확인해요.')+'</p>'+
+      '</div>'+
+      '<div class="card">'+
+        '<h3>진행 상황</h3>'+
+        '<div class="tl">'+
+        STAGES.map(function(s,i){
+          var cls = i<S.stage ? 'done' : (i===S.stage ? 'now' : '');
+          var last = i===STAGES.length-1;
+          return '<div class="it '+cls+'">'+
+            '<div class="mk"><div class="ci">'+(i<S.stage?'✓':(i+1))+'</div>'+(last?'':'<div class="ln"></div>')+'</div>'+
+            '<div class="tx"><b>'+s+'</b>'+(i===S.stage?'<br><span class="sub">'+STAGE_SUB[i]+'</span>':'')+'</div>'+
+          '</div>';
+        }).join('')+
+        '</div>'+
+      '</div>'+
+      (S.done ?
+        '<div class="card fade">'+
+          '<h3>공사가 끝났어요. 어떠셨어요?</h3>'+
+          '<div class="stars" role="group" aria-label="별점 선택">'+
+            [1,2,3,4,5].map(function(n){ return '<button data-act="rate:'+n+'" class="'+(S.rating>=n?'on':'')+'" aria-label="'+n+'점">★</button>'; }).join('')+
+          '</div>'+
+          '<div class="field" style="margin-top:.8rem"><label for="rev">한 줄 후기</label>'+
+          '<textarea id="rev" data-inp="review" placeholder="예) 창문 닫으면 바깥 소리가 확 줄었어요">'+esc(S.review)+'</textarea></div>'+
+          '<label class="cta ghost" for="bill2" style="margin-top:.6rem">'+(S.billAfter?'고지서 1장 올렸어요 ✓':'공사 후 첫 달 관리비 고지서 올리기')+'</label>'+
+          '<input id="bill2" type="file" accept="image/*" class="sr" data-inp="billAfter">'+
+          '<div class="info" style="margin-top:.9rem;display:flex;gap:.5rem;align-items:flex-start">'+
+            '<span class="ai" style="flex:0 0 auto">AI 학습</span>'+
+            '<span>남겨주신 결과는 다음 이웃의 더 정확한 매칭에 쓰여요.</span></div>'+
+        '</div>'
+        :
+        '<button class="cta ghost" data-act="demoDone" style="margin-top:.875rem">데모: 시공 완료 상태로 보기</button>');
+
+    return { brandTitle:'내 공사', tabs:true, body:body,
+      cta: S.done ? { label:'후기 남기기', act:'submitReview', off:S.rating===0 } : null };
+  }
+
+  /* 내 정보 탭 */
+  function scInfo(){
+    var body =
+      '<div class="card">'+
+        '<h3>내 건물</h3>'+
+        '<dl class="rows">'+
+          '<div class="row"><dt>주소</dt><dd style="text-align:right">'+esc(S.addr||'○○시 ○○구 ○○로 12-3')+'</dd></div>'+
+          '<div class="row"><dt>사용승인</dt><dd>'+BLD.year+'년 ('+BLD.age+'년)</dd></div>'+
+          '<div class="row"><dt>건물 종류</dt><dd>'+BLD.use+' · '+BLD.fl+'</dd></div>'+
+          '<div class="row"><dt>연면적</dt><dd>'+BLD.area+'</dd></div>'+
+        '</dl>'+
+      '</div>'+
+      '<div class="card">'+
+        '<h3>글씨 크기</h3>'+
+        '<p class="sub">화면이 작게 보이면 글씨를 크게 키울 수 있어요.</p>'+
+        '<button class="cta ghost" data-act="big" style="margin-top:.7rem">'+(S.big?'원래 크기로 돌리기':'글씨 크게 (1.25배)')+'</button>'+
+      '</div>'+
+      '<div class="card">'+
+        '<h3>알림</h3>'+
+        '<ul class="ck-list">'+
+          '<li><span class="v">✓</span><span>입찰 마감·결과 알림</span></li>'+
+          '<li><span class="v">✓</span><span>현장 확인·계약 일정 알림</span></li>'+
+          '<li><span class="v">✓</span><span>우리 동네 새 공동공사 모집 알림</span></li>'+
+        '</ul>'+
+        '<button class="cta ghost" data-act="noti" style="margin-top:.8rem">알림 설정 바꾸기</button>'+
+      '</div>'+
+      '<div class="card">'+
+        '<h3>그린토피아는 어떤 서비스인가요?</h3>'+
+        '<p class="sub" style="margin:0">이웃 건물의 그린리모델링 공사 수요를 묶어 공동견적·경쟁입찰로 공사비를 낮추고, 받을 수 있는 지원사업까지 연결해 드리는 민간 플랫폼이에요. AI는 누구와 함께 묶을지를 정하고, 가격은 업체 경쟁입찰로 정해져요. 계약은 건물주와 업체가 직접 맺어요.</p>'+
+      '</div>'+
+      '<p class="small" style="margin-top:1rem">※ 이 앱은 시연용 프로토타입이에요. 업체 입찰가, Cluster 번호, 적합도 점수, 후기, 지원사업 내용 등 화면에 보이는 모든 수치와 사례는 가상 예시이며 실제 금액·지원 여부와 다를 수 있어요.</p>';
+    return { brandTitle:'내 정보', tabs:true, body:body, cta:null };
+  }
+
+  /* ───────── 렌더 ───────── */
+  function render(keepFocus){
+    var sc=screen();
+    var hdr='';
+    if(sc.brand){
+      hdr = '<span class="brand">그린토피아</span>';
+    } else if(sc.brandTitle){
+      hdr = '<span class="ttl">'+sc.brandTitle+'</span>';
+    } else {
+      hdr = (sc.back ? '<button class="iconbtn" data-act="back" aria-label="뒤로 가기">'+ico('back')+'</button>' : '')+
+            '<span class="ttl">'+sc.title+'</span>';
+    }
+    hdr += '<span class="sp"></span>'+
+      '<button class="bigbtn" data-act="big" aria-pressed="'+S.big+'">'+
+      '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 18L9 6l5 12M5.8 14h6.4M16 18l3-7 3 7M17 15.5h4"/></svg>'+
+      '글씨 크게</button>';
+    document.getElementById('hdr').innerHTML = hdr;
+
+    document.getElementById('screen').innerHTML = '<div class="stack">'+sc.body+'</div>';
+
+    var f='';
+    if(sc.cta){
+      f += '<button class="cta" data-act="'+sc.cta.act+'"'+(sc.cta.off?' disabled':'')+'>'+sc.cta.label+'</button>';
+    }
+    if(sc.tabs){
+      f += '<nav class="tabbar" aria-label="주요 메뉴">'+
+        [['home','홈','home'],['my','내 공사','clip'],['info','내 정보','user']].map(function(t){
+          return '<button data-act="tab:'+t[0]+'"'+(S.tab===t[0]?' aria-current="page"':'')+'>'+ico(t[2])+'<span>'+t[1]+'</span></button>';
+        }).join('')+'</nav>';
+    }
+    document.getElementById('foot').innerHTML = f;
+
+    // 하단 고정 영역 높이만큼 본문 여백 확보
+    requestAnimationFrame(function(){
+      var h=document.querySelector('.foot').offsetHeight||0;
+      document.getElementById('screen').style.paddingBottom=(h+24)+'px';
+    });
+    if(!keepFocus) window.scrollTo(0,0);
+  }
+
+  /* ───────── 매칭 로딩 연출 ───────── */
+  function runMatching(){
+    S.matching=1; render();
+    var t1=setTimeout(function(){ mark(1); }, 700);
+    var t2=setTimeout(function(){ mark(2); }, 1400);
+    var t3=setTimeout(function(){ S.matching=2; render(); }, 2100);
+    function mark(i){
+      var list=document.getElementById('steps-list'); if(!list) return;
+      var el=list.querySelector('[data-i="'+i+'"]');
+      if(el){ el.style.opacity=1; el.querySelector('.dot').classList.add('on'); }
+    }
+    void t1; void t2; void t3;
+  }
+
+  /* ───────── 이벤트 ───────── */
+  document.addEventListener('click', function(e){
+    var el=e.target.closest('[data-act]'); if(!el) return;
+    var parts=el.getAttribute('data-act').split(':');
+    var a=parts[0], arg=parts[1];
+    e.preventDefault();
+    if(a!=='vendor') e.stopPropagation();
+
+    switch(a){
+      case 'big':
+        S.big=!S.big;
+        document.documentElement.style.setProperty('--s', S.big?1.25:1);
+        render(true); toast(S.big?'글씨를 크게 바꿨어요':'글씨를 원래 크기로 바꿨어요'); return;
+      case 'start': S.view='register'; S.step=1; break;
+      case 'back': goBack(); break;
+      case 'load':
+        if(!S.addr.trim()){ toast('주소를 먼저 입력해 주세요'); return; }
+        S.loading=true; S.loaded=false; render(true);
+        setTimeout(function(){ S.loading=false; S.loaded=true; render(true); }, 1000);
+        return;
+      case 'next': S.step=Math.min(4,S.step+1); break;
+      case 'pain':
+        var i=S.pains.indexOf(arg);
+        if(i<0) S.pains.push(arg); else S.pains.splice(i,1);
+        render(true); return;
+      case 'timing': S.timing=parseInt(arg,10); render(true); return;
+      case 'budget': S.budget=parseInt(arg,10); render(true); return;
+      case 'find': S.view='matching'; runMatching(); return;
+      case 'score': S.scoreOpen=!S.scoreOpen; render(true); return;
+      case 'join':
+        S.joined=true; S.stage=2; render();
+        toast('공동견적에 참여했어요'); return;
+      case 'bids': S.view='bids'; break;
+      case 'pick': S.vendor=arg; render(true); toast(V(arg).name+'를 선택했어요'); return;
+      case 'vendor': S.detail=arg; S.view='vendor'; break;
+      case 'pickFromDetail':
+        S.vendor=S.detail; S.view='bids';
+        render(); toast(V(S.vendor).name+'를 선택했어요'); return;
+      case 'toSupport': S.view='support'; S.stage=3; break;
+      case 'evid': S.evidOpen=!S.evidOpen; render(true); return;
+      case 'agree': S.agreed=!S.agreed; render(true); return;
+      case 'confirm': S.confirmed=true; S.stage=4; S.view='complete'; break;
+      case 'toMy': S.view='tab'; S.tab='my'; break;
+      case 'tab': S.view='tab'; S.tab=arg; break;
+      case 'demoDone': S.done=true; S.stage=7; render(); toast('시공 완료 상태로 바꿨어요'); return;
+      case 'rate': S.rating=parseInt(arg,10); render(true); return;
+      case 'submitReview':
+        toast('후기를 남겼어요. 고맙습니다!'); return;
+      case 'interest':
+        toast('Cluster #'+arg+' 모집에 관심을 등록했어요'); return;
+      case 'noti':
+        toast('알림 설정은 시연에서 생략했어요'); return;
+      default: return;
+    }
+    render();
+  });
+
+  function goBack(){
+    if(S.view==='register'){
+      if(S.step>1){ S.step--; } else { S.view='onboard'; }
+    } else if(S.view==='matching'){ S.view='register'; S.step=4; }
+    else if(S.view==='bids'){ S.view='matching'; }
+    else if(S.view==='vendor'){ S.view='bids'; }
+    else if(S.view==='support'){ S.view='bids'; }
+    else { S.view='tab'; S.tab='home'; }
+  }
+
+  document.addEventListener('input', function(e){
+    var el=e.target, k=el.getAttribute('data-inp'); if(!k) return;
+    if(k==='addr'){ S.addr=el.value; return; }
+    if(k==='review'){ S.review=el.value; return; }
+    if(k==='quote'){
+      S.quote=el.value;
+      var sel=V(S.vendor);
+      var q=parseInt(String(S.quote).replace(/[^0-9]/g,''),10);
+      var box=document.getElementById('diff'); if(!box) return;
+      if(!S.quote || isNaN(q) || q<=0){ box.innerHTML=''; return; }
+      var d=q-myShare(sel);
+      if(d>0) box.innerHTML='<div class="info fade" style="margin-top:.7rem"><b>따로 받은 견적보다 약 '+won(d)+' 낮아요.</b><br>공동견적 예상 금액 기준이에요.</div>';
+      else if(d<0) box.innerHTML='<div class="note fade" style="margin-top:.7rem"><b>따로 받은 견적이 약 '+won(-d)+' 더 낮아요.</b><br>자재 사양과 A/S 조건도 함께 비교해 보세요.</div>';
+      else box.innerHTML='<div class="info fade" style="margin-top:.7rem">두 금액이 거의 같아요.</div>';
+    }
+  });
+
+  document.addEventListener('change', function(e){
+    var el=e.target, k=el.getAttribute('data-inp'); if(!k) return;
+    if(k==='bill'){ S.bill=!!(el.files && el.files.length); render(true); if(S.bill) toast('고지서 사진을 올렸어요'); }
+    if(k==='billAfter'){ S.billAfter=!!(el.files && el.files.length); render(true); if(S.billAfter) toast('고지서를 올렸어요'); }
+  });
+
+  document.addEventListener('submit', function(e){ e.preventDefault(); });
+
+  render();
+})();
+</script>
